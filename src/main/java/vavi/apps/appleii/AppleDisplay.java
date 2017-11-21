@@ -13,98 +13,98 @@ package vavi.apps.appleii;
  * Refreshes the display
  */
 public class AppleDisplay implements Runnable {
-	// Instances of other classes
+    // Instances of other classes
     private EmAppleII apple;
 
-	// Configuration variables
-	public static final int COLORMODE_GREEN = 0;
-	public static final int COLORMODE_COLOR = 1;
-	
-	private int colorMode;
+    // Configuration variables
+    public static final int COLORMODE_GREEN = 0;
+    public static final int COLORMODE_COLOR = 1;
 
-	// Refresh
-	private int refreshRate;
-	private long refreshInterval;
-	private long refreshDelayCumulative;
-	private long refreshDelayPerSecond;
-	private long refreshCycle;
+    private int colorMode;
 
-	private boolean isPrecalcRequested = true;
-	private boolean isRefreshRequested = true;
-	
-	// Graphics interface variables
+    // Refresh
+    private int refreshRate;
+    private long refreshInterval;
+    private long refreshDelayCumulative;
+    private long refreshDelayPerSecond;
+    private long refreshCycle;
+
+    private boolean isPrecalcRequested = true;
+    private boolean isRefreshRequested = true;
+
+    // Graphics interface variables
     private boolean[] graphicsDirty = new boolean[0x6000 >> 7];
-	private int graphicsMode;
+    private int graphicsMode;
 
-	// Display
-	private static final int DISPLAY_CHAR_SIZE_X = 7;
-	private static final int DISPLAY_CHAR_SIZE_Y = 8;
-	private static final int DISPLAY_CHAR_COUNT_X = 80;
-	private static final int DISPLAY_CHAR_COUNT_Y = 24;
-	public static final int DISPLAY_SIZE_X = DISPLAY_CHAR_COUNT_X * DISPLAY_CHAR_SIZE_X;
-	public static final int DISPLAY_SIZE_Y = DISPLAY_CHAR_COUNT_Y * DISPLAY_CHAR_SIZE_Y;
+    // Display
+    private static final int DISPLAY_CHAR_SIZE_X = 7;
+    private static final int DISPLAY_CHAR_SIZE_Y = 8;
+    private static final int DISPLAY_CHAR_COUNT_X = 80;
+    private static final int DISPLAY_CHAR_COUNT_Y = 24;
+    public static final int DISPLAY_SIZE_X = DISPLAY_CHAR_COUNT_X * DISPLAY_CHAR_SIZE_X;
+    public static final int DISPLAY_SIZE_Y = DISPLAY_CHAR_COUNT_Y * DISPLAY_CHAR_SIZE_Y;
 
-	// Display composition
-	private int[] displayImageBuffer;
-	
-	public int[] getDisplayImageBuffer() {
+    // Display composition
+    private int[] displayImageBuffer;
+
+    public int[] getDisplayImageBuffer() {
         return displayImageBuffer;
     }
 
     // Display scale
-	private float displayScale;
+    private float displayScale;
 
-	// Display palette
-	private int[] displayPalette;
-	private static final int[] displayPaletteGreen = {
-		0xff000000, 0xff0e470e, 0xff041204, 0xff166e16,
-		0xff0f4a0f, 0xff115411, 0xff0c3b0c, 0xff1f9e1f,
-		0xff125c12, 0xff1b8a1b, 0xff22ab22, 0xff24b524,
-		0xff1A871a, 0xff2de32d, 0xff25bd25, 0xff32ff32
-	};
-	private static final int[] displayPaletteColor = {
-		0xff000000, 0xffdd0033, 0xff000099, 0xffdd22dd,
-		0xff007722, 0xff555555, 0xff2222ff, 0xff66aaff,
-		0xff885500, 0xffff6600, 0xffaaaaaa, 0xffff9988,
-		0xff11dd00, 0xffffff00, 0xff44ff99, 0xffffffff
-	};
+    // Display palette
+    private int[] displayPalette;
+    private static final int[] displayPaletteGreen = {
+        0xff000000, 0xff0e470e, 0xff041204, 0xff166e16,
+        0xff0f4a0f, 0xff115411, 0xff0c3b0c, 0xff1f9e1f,
+        0xff125c12, 0xff1b8a1b, 0xff22ab22, 0xff24b524,
+        0xff1A871a, 0xff2de32d, 0xff25bd25, 0xff32ff32
+    };
+    private static final int[] displayPaletteColor = {
+        0xff000000, 0xffdd0033, 0xff000099, 0xffdd22dd,
+        0xff007722, 0xff555555, 0xff2222ff, 0xff66aaff,
+        0xff885500, 0xffff6600, 0xffaaaaaa, 0xffff9988,
+        0xff11dd00, 0xffffff00, 0xff44ff99, 0xffffffff
+    };
 
-	// Character stuff
-	private static final int CHARSET_CHAR_SIZE_X = 8;
-	private static final int CHARSET_CHAR_SIZE_Y = 8;
-	private static final int CHARSET_SIZE_X = 0x100 * CHARSET_CHAR_SIZE_X;
-	private static final int CHARSET_SIZE_Y = CHARSET_CHAR_SIZE_Y;
+    // Character stuff
+    private static final int CHARSET_CHAR_SIZE_X = 8;
+    private static final int CHARSET_CHAR_SIZE_Y = 8;
+    private static final int CHARSET_SIZE_X = 0x100 * CHARSET_CHAR_SIZE_X;
+    private static final int CHARSET_SIZE_Y = CHARSET_CHAR_SIZE_Y;
 
-	private static final int CHARMAP_NORMAL = 0;
-	private static final int CHARMAP_FLASH = 1;
-	private static final int CHARMAP_ALT = 2;
+    private static final int CHARMAP_NORMAL = 0;
+    private static final int CHARMAP_FLASH = 1;
+    private static final int CHARMAP_ALT = 2;
 
-	private int[] charSet = new int[CHARSET_SIZE_X * CHARSET_CHAR_SIZE_Y];
-	private int[] charMap;
-	private int[][] charMaps = new int[3][0x100];
-	private long charMapFlashCycle = 0;
-	private boolean isCharMapFlash = false;
+    private int[] charSet = new int[CHARSET_SIZE_X * CHARSET_CHAR_SIZE_Y];
+    private int[] charMap;
+    private int[][] charMaps = new int[3][0x100];
+    private long charMapFlashCycle = 0;
+    private boolean isCharMapFlash = false;
 
-	private int[][] charMapLookup = {
-		{ 0xc0, 0xa0, 0x40, 0x20, 0x40, 0x20, 0x40, 0x60 },
-		{ 0xc0, 0xa0, 0xc0, 0xa0, 0x40, 0x20, 0x40, 0x60 },
-		{ 0xc0, 0xa0, 0x00, 0xe0, 0x40, 0x20, 0x40, 0x60 },
-	};
+    private int[][] charMapLookup = {
+        { 0xc0, 0xa0, 0x40, 0x20, 0x40, 0x20, 0x40, 0x60 },
+        { 0xc0, 0xa0, 0xc0, 0xa0, 0x40, 0x20, 0x40, 0x60 },
+        { 0xc0, 0xa0, 0x00, 0xe0, 0x40, 0x20, 0x40, 0x60 },
+    };
 
-	private static final int[] textLineAddress = {
-		0x0000, 0x0080, 0x0100, 0x0180, 0x0200, 0x0280, 0x0300, 0x0380,
-		0x0028, 0x00a8, 0x0128, 0x01a8, 0x0228, 0x02a8, 0x0328, 0x03a8,
-		0x0050, 0x00d0, 0x0150, 0x01d0, 0x0250, 0x02d0, 0x0350, 0x03d0,
-	};
+    private static final int[] textLineAddress = {
+        0x0000, 0x0080, 0x0100, 0x0180, 0x0200, 0x0280, 0x0300, 0x0380,
+        0x0028, 0x00a8, 0x0128, 0x01a8, 0x0228, 0x02a8, 0x0328, 0x03a8,
+        0x0050, 0x00d0, 0x0150, 0x01d0, 0x0250, 0x02d0, 0x0350, 0x03d0,
+    };
 
-	// Hires stuff
-	private int hiresEvenOddToWord[] = new int[0x200];
-	private int hiresWord[] = new int[8];
-	private int hiresWordNext[] = new int[8];
-	private int hiresLookup[] = new int[0x100];	// Bits: [NNccccPP] - Next, current, Previous bits
-	private static final int hiresLookupColor[] = {
-		// Bits: [PPNNcccc] - Previous, Next, current bits => 4 pixel @ 4 bit color output
-	    // Color-bleeding algorithm
+    // Hires stuff
+    private int hiresEvenOddToWord[] = new int[0x200];
+    private int hiresWord[] = new int[8];
+    private int hiresWordNext[] = new int[8];
+    private int hiresLookup[] = new int[0x100];    // Bits: [NNccccPP] - Next, current, Previous bits
+    private static final int hiresLookupColor[] = {
+        // Bits: [PPNNcccc] - Previous, Next, current bits => 4 pixel @ 4 bit color output
+        // Color-bleeding algorithm
         0x0000, 0x0111, 0x2222, 0x2333, 0x4440, 0x4551, 0x6662, 0x6773, 0x8800, 0x8911, 0xaa22, 0xab33, 0xcc40, 0xcd51, 0xee62, 0xef73, // 00cccc00
         0x1000, 0x1111, 0x3222, 0x3333, 0x5440, 0x5551, 0x7662, 0x7773, 0x9800, 0x9911, 0xba22, 0xbb33, 0xdc40, 0xdd51, 0xfe62, 0xff73, // 01cccc00
         0x0000, 0x0111, 0x2222, 0x2333, 0x4440, 0x4551, 0x6662, 0x6773, 0x8800, 0x8911, 0xaa22, 0xab33, 0xcc40, 0xcd51, 0xee62, 0xef73, // 10cccc00
@@ -139,908 +139,908 @@ public class AppleDisplay implements Runnable {
         0x0000, 0x0001, 0x0020, 0x0033, 0x0400, 0x0505, 0x0660, 0x0777, 0x8000, 0x9009, 0xa0a0, 0xb0bb, 0xcc00, 0xdddd, 0xeee0, 0xffff, // 01cccc11
         0x0000, 0x0001, 0x0020, 0x0033, 0x0400, 0x0505, 0x0660, 0x0777, 0x8000, 0x9009, 0xa0a0, 0xb0bb, 0xcc00, 0xdd0d, 0xeeee, 0xffff, // 10cccc11
         0x0000, 0x000f, 0x00f0, 0x00ff, 0x0f00, 0x0f0f, 0x0ff0, 0x0fff, 0xf000, 0xf00f, 0xf0f0, 0xf0ff, 0xff00, 0xff0f, 0xfff0, 0xffff, // 11cccc11
-	};
-	private int[] doubleHiresPalette;
-	private static final int[] doubleHiresPaletteColor = {
-		0x000000, 0x000099, 0x007722, 0x2222ff, 
-		0x885500, 0xaaaaaa, 0x11dd00, 0x44ff99, 
-		0xdd0033, 0xdd22dd, 0x555555, 0x66aaff,
-		0xff6600, 0xff9988, 0xffff00, 0xffffff,
-	};
-	
+    };
+    private int[] doubleHiresPalette;
+    private static final int[] doubleHiresPaletteColor = {
+        0x000000, 0x000099, 0x007722, 0x2222ff,
+        0x885500, 0xaaaaaa, 0x11dd00, 0x44ff99,
+        0xdd0033, 0xdd22dd, 0x555555, 0x66aaff,
+        0xff6600, 0xff9988, 0xffff00, 0xffffff,
+    };
+
     // Thread stuff
-	private boolean isPaused = true;
-	private Thread thread;
+    private boolean isPaused = true;
+    private Thread thread;
 
     /**
      * AppleDisplay class constructor
-     * 
+     *
      * @param apple The EmAppleII instance
      */
     public AppleDisplay(EmAppleII apple) {
-		this.apple = apple;
-		
-		// Create display image
+        this.apple = apple;
+
+        // Create display image
         displayImageBuffer = new int[DISPLAY_SIZE_X * DISPLAY_SIZE_Y];
 
-		// Character maps
-		precalcCharMaps();
+        // Character maps
+        precalcCharMaps();
 
-		// Hires
-		precalcHiresEvenEddToWord();
+        // Hires
+        precalcHiresEvenEddToWord();
 
-		// Set parameters
-		setScale(1.0f);
-		setRefreshRate(10);
-		setColorMode(COLORMODE_GREEN);
-		requestRefresh();
-	}
-
-	/**
-	 * Set scale
-	 */
-	public void setScale(float value) {
-		if (value <= 0.0f) {
-			return;
-		}
-			
-		displayScale = value;
-		isPrecalcRequested = true;
-    }
-	
-	/**
-	 * Get scale
-	 */
-	public float getScale() {
-		return displayScale;
-    }
-	
-	/**
-	 * Set refresh rate
-	 *
-	 * @param	value	Display refresh rate in mHz
-	 */
-	public void setRefreshRate(int value) {
-		if (value <= 0.0f) {
-			return;
-		}
-			
-		this.refreshRate = value;
-		refreshInterval = (int) (1000.0 / value);
-    }
-	
-	/**
-	 * Get refresh rate
-	 */
-	public int getRefreshRate() {
-		return refreshRate;
-    }
-	
-	/**
-	 * Set color mode
-	 */
-	public void setColorMode(int value) {
-		colorMode = value;
-		isPrecalcRequested = true;
-    }
-	
-	/**
-	 * Get color mode
-	 */
-	public int getColorMode() {
-		return colorMode;
-    }
-	
-	/**
-	 * Set paused
-	 */
-	public void setPaused(boolean value) {
-		if (isPaused == value) {
-			return;
-		}
-
-		isPaused = value;
-		if (isPaused) {
-			try {
-				thread.join(1000);
-			} catch (InterruptedException e) {
-			}
-			apple.view.repaint();
-		} else {
-			isRefreshRequested = true;
-			thread = new Thread(this);
-			thread.start();
-		}
-    }
-	
-	/**
-	 * Get paused
-	 */
-	public boolean isPaused() {
-		return isPaused;
+        // Set parameters
+        setScale(1.0f);
+        setRefreshRate(10);
+        setColorMode(COLORMODE_GREEN);
+        requestRefresh();
     }
 
-	public void requestRefresh() {
+    /**
+     * Set scale
+     */
+    public void setScale(float value) {
+        if (value <= 0.0f) {
+            return;
+        }
+
+        displayScale = value;
+        isPrecalcRequested = true;
+    }
+
+    /**
+     * Get scale
+     */
+    public float getScale() {
+        return displayScale;
+    }
+
+    /**
+     * Set refresh rate
+     *
+     * @param    value    Display refresh rate in mHz
+     */
+    public void setRefreshRate(int value) {
+        if (value <= 0.0f) {
+            return;
+        }
+
+        this.refreshRate = value;
+        refreshInterval = (int) (1000.0 / value);
+    }
+
+    /**
+     * Get refresh rate
+     */
+    public int getRefreshRate() {
+        return refreshRate;
+    }
+
+    /**
+     * Set color mode
+     */
+    public void setColorMode(int value) {
+        colorMode = value;
+        isPrecalcRequested = true;
+    }
+
+    /**
+     * Get color mode
+     */
+    public int getColorMode() {
+        return colorMode;
+    }
+
+    /**
+     * Set paused
+     */
+    public void setPaused(boolean value) {
+        if (isPaused == value) {
+            return;
+        }
+
+        isPaused = value;
+        if (isPaused) {
+            try {
+                thread.join(1000);
+            } catch (InterruptedException e) {
+            }
+            apple.view.repaint();
+        } else {
+            isRefreshRequested = true;
+            thread = new Thread(this);
+            thread.start();
+        }
+    }
+
+    /**
+     * Get paused
+     */
+    public boolean isPaused() {
+        return isPaused;
+    }
+
+    public void requestRefresh() {
         isRefreshRequested = true;
-	}
+    }
 
-	/**
- 	 * Step instruction in debug mode
-	 */
-	public String getStatInfo() {
-		StringBuffer statInfo = new StringBuffer();
-		long refreshRateCurrent;
+    /**
+      * Step instruction in debug mode
+     */
+    public String getStatInfo() {
+        StringBuffer statInfo = new StringBuffer();
+        long refreshRateCurrent;
 
-		// Calculate effective CPU speed
-		if (refreshDelayPerSecond > 1000) {
-			refreshRateCurrent = refreshRate * 1000 / refreshDelayPerSecond;
-		} else {
-			refreshRateCurrent = refreshRate;
-		}
+        // Calculate effective CPU speed
+        if (refreshDelayPerSecond > 1000) {
+            refreshRateCurrent = refreshRate * 1000 / refreshDelayPerSecond;
+        } else {
+            refreshRateCurrent = refreshRate;
+        }
 
-		// Return FPS
-		statInfo.append(" FPS=").append(refreshRateCurrent).append(" [").append(refreshDelayPerSecond).append(" ms/s]\n");
-		statInfo.append(" GM=").append(graphicsMode).append("\n");
+        // Return FPS
+        statInfo.append(" FPS=").append(refreshRateCurrent).append(" [").append(refreshDelayPerSecond).append(" ms/s]\n");
+        statInfo.append(" GM=").append(graphicsMode).append("\n");
 
-		statInfo.append(" ").append((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024L).append("KB/").append(Runtime.getRuntime().totalMemory() / 1024L).append("KB");
+        statInfo.append(" ").append((Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory()) / 1024L).append("KB/").append(Runtime.getRuntime().totalMemory() / 1024L).append("KB");
 
-		return statInfo.toString();
-	}
+        return statInfo.toString();
+    }
 
-	/**
-	 * Display refresh thread
-	 */
+    /**
+     * Display refresh thread
+     */
     public void run() {
-		try {
-			while (!isPaused) {
-				long refreshStart = System.currentTimeMillis();
-				long refreshDelay;
+        try {
+            while (!isPaused) {
+                long refreshStart = System.currentTimeMillis();
+                long refreshDelay;
 
-				refreshDisplay();
+                refreshDisplay();
 
-				refreshDelay = System.currentTimeMillis() - refreshStart;
+                refreshDelay = System.currentTimeMillis() - refreshStart;
 
-				refreshDelayCumulative += refreshDelay;
-				refreshCycle++;
-				if (refreshCycle >= refreshRate) {
-					refreshDelayPerSecond = refreshDelayCumulative;
-					refreshDelayCumulative = refreshCycle = 0;
-				}
+                refreshDelayCumulative += refreshDelay;
+                refreshCycle++;
+                if (refreshCycle >= refreshRate) {
+                    refreshDelayPerSecond = refreshDelayCumulative;
+                    refreshDelayCumulative = refreshCycle = 0;
+                }
 
-				if (refreshDelay < refreshInterval) {
-					Thread.sleep(refreshInterval - refreshDelay);
-				}
-			}
-		} catch (Throwable e) {
+                if (refreshDelay < refreshInterval) {
+                    Thread.sleep(refreshInterval - refreshDelay);
+                }
+            }
+        } catch (Throwable e) {
 apple.view.debug(e);
 apple.view.repaint();
-		}
-	}
-	
-	/**
-	 * Display refresh
-	 */
-	private void refreshDisplay() {
-		boolean isCharsetUpdateRequested = false;
-		boolean isSetDirtyRequested = false;
-		boolean isSetHiresDirtyRequested = false;
-		boolean isRenderRequested = false;
+        }
+    }
 
-		// Precalculation
-		if (isPrecalcRequested) {
-			isPrecalcRequested = false;
-			precalcDisplay();
-			graphicsMode = -1;
-		}
+    /**
+     * Display refresh
+     */
+    private void refreshDisplay() {
+        boolean isCharsetUpdateRequested = false;
+        boolean isSetDirtyRequested = false;
+        boolean isSetHiresDirtyRequested = false;
+        boolean isRenderRequested = false;
 
-		// Repaint if graphics mode changes
-		if (graphicsMode != apple.graphicsMode) {
-			graphicsMode = apple.graphicsMode;
-			isCharsetUpdateRequested = true;
-			isSetHiresDirtyRequested = true;
-		}
+        // Precalculation
+        if (isPrecalcRequested) {
+            isPrecalcRequested = false;
+            precalcDisplay();
+            graphicsMode = -1;
+        }
 
-		// Periodic refresh
-		if (charMapFlashCycle <= 0) {
-			charMapFlashCycle = refreshRate / 4 - 1;
-			isCharMapFlash = !isCharMapFlash;
-			isCharsetUpdateRequested = true;
-		} else {
-			charMapFlashCycle--;
-		}
+        // Repaint if graphics mode changes
+        if (graphicsMode != apple.graphicsMode) {
+            graphicsMode = apple.graphicsMode;
+            isCharsetUpdateRequested = true;
+            isSetHiresDirtyRequested = true;
+        }
 
-		// Some internal variables
-		boolean isSomeText = ((graphicsMode & (EmAppleII.GR_TEXT | EmAppleII.GR_MIXMODE)) != 0);
-		boolean isSomeLores = ((graphicsMode & (EmAppleII.GR_TEXT | EmAppleII.GR_HIRES)) == 0);
-		boolean isSomeHires = ((graphicsMode & (EmAppleII.GR_TEXT | EmAppleII.GR_HIRES)) == EmAppleII.GR_HIRES);
+        // Periodic refresh
+        if (charMapFlashCycle <= 0) {
+            charMapFlashCycle = refreshRate / 4 - 1;
+            isCharMapFlash = !isCharMapFlash;
+            isCharsetUpdateRequested = true;
+        } else {
+            charMapFlashCycle--;
+        }
 
-		boolean isMixedMode = ((graphicsMode & (EmAppleII.GR_TEXT | EmAppleII.GR_MIXMODE)) == EmAppleII.GR_MIXMODE);
-		boolean isPage2 = ((graphicsMode & (EmAppleII.GR_80STORE | EmAppleII.GR_PAGE2)) == EmAppleII.GR_PAGE2);
-		boolean isAltChar = ((graphicsMode & EmAppleII.GR_ALTCHAR) != 0);
-		boolean isDoubleTextMode = ((graphicsMode & EmAppleII.GR_80CHAR) == EmAppleII.GR_80CHAR);
-		boolean isDoubleGraphicsMode = ((graphicsMode & (EmAppleII.GR_80CHAR | EmAppleII.GR_DHIRES)) == (EmAppleII.GR_80CHAR | EmAppleII.GR_DHIRES));
+        // Some internal variables
+        boolean isSomeText = ((graphicsMode & (EmAppleII.GR_TEXT | EmAppleII.GR_MIXMODE)) != 0);
+        boolean isSomeLores = ((graphicsMode & (EmAppleII.GR_TEXT | EmAppleII.GR_HIRES)) == 0);
+        boolean isSomeHires = ((graphicsMode & (EmAppleII.GR_TEXT | EmAppleII.GR_HIRES)) == EmAppleII.GR_HIRES);
 
-		int baseAddressText = isPage2 ? EmAppleII.MEM_MAIN_RAM2 : EmAppleII.MEM_MAIN_TEXT;
-		int baseAddressHires = isPage2 ? EmAppleII.MEM_MAIN_RAM3 : EmAppleII.MEM_MAIN_HIRES;
+        boolean isMixedMode = ((graphicsMode & (EmAppleII.GR_TEXT | EmAppleII.GR_MIXMODE)) == EmAppleII.GR_MIXMODE);
+        boolean isPage2 = ((graphicsMode & (EmAppleII.GR_80STORE | EmAppleII.GR_PAGE2)) == EmAppleII.GR_PAGE2);
+        boolean isAltChar = ((graphicsMode & EmAppleII.GR_ALTCHAR) != 0);
+        boolean isDoubleTextMode = ((graphicsMode & EmAppleII.GR_80CHAR) == EmAppleII.GR_80CHAR);
+        boolean isDoubleGraphicsMode = ((graphicsMode & (EmAppleII.GR_80CHAR | EmAppleII.GR_DHIRES)) == (EmAppleII.GR_80CHAR | EmAppleII.GR_DHIRES));
 
-		// Set char map
-		if (isCharsetUpdateRequested) {
-			if (isAltChar) {
-				setCharMap(CHARMAP_ALT);
-			} else if (isCharMapFlash) {
-				setCharMap(CHARMAP_FLASH);
-			} else {
-				setCharMap(CHARMAP_NORMAL);
-			}
+        int baseAddressText = isPage2 ? EmAppleII.MEM_MAIN_RAM2 : EmAppleII.MEM_MAIN_TEXT;
+        int baseAddressHires = isPage2 ? EmAppleII.MEM_MAIN_RAM3 : EmAppleII.MEM_MAIN_HIRES;
 
-			isSetDirtyRequested = true;
-			isRefreshRequested = true;
-		}
-		
-		// Refresh dirty buffers?
-		if (isSetDirtyRequested) {
-			if (isSomeText || isSomeLores) {
-				setTextBufferDirty(baseAddressText);
-			}
+        // Set char map
+        if (isCharsetUpdateRequested) {
+            if (isAltChar) {
+                setCharMap(CHARMAP_ALT);
+            } else if (isCharMapFlash) {
+                setCharMap(CHARMAP_FLASH);
+            } else {
+                setCharMap(CHARMAP_NORMAL);
+            }
 
-			if (isSetHiresDirtyRequested && isSomeHires) {
-				setHiresBufferDirty(baseAddressHires);
-			}
+            isSetDirtyRequested = true;
+            isRefreshRequested = true;
+        }
 
-			isRenderRequested = true;
-		} else {
-			if ((isSomeText || isSomeLores) && isTextBufferDirty(baseAddressText)) {
-				isRenderRequested = true;
-			}
+        // Refresh dirty buffers?
+        if (isSetDirtyRequested) {
+            if (isSomeText || isSomeLores) {
+                setTextBufferDirty(baseAddressText);
+            }
 
-			if (isSomeHires && isHiresBufferDirty(baseAddressHires)) {
-				isRenderRequested = true;
-			}
-		}
+            if (isSetHiresDirtyRequested && isSomeHires) {
+                setHiresBufferDirty(baseAddressHires);
+            }
 
-		// Draw
-		if (isRenderRequested) {
-			if (isSomeText) {
-				if (isDoubleTextMode) {
-					renderDoubleText(baseAddressText, isMixedMode);
-				} else {
-					renderText(baseAddressText, isMixedMode);
-				}
-			}
-			
-			if (isSomeHires) {
-				if (isDoubleGraphicsMode) {
-					renderDoubleHires(baseAddressHires, isMixedMode);
-				} else {
-					renderHires(baseAddressHires, isMixedMode);
-				}
-			} else if (isSomeLores) {
-				if (isDoubleGraphicsMode) {
-					renderDoubleLores(baseAddressText, isMixedMode);
-				} else {
-					renderLores(baseAddressText, isMixedMode);
-				}
-			}
+            isRenderRequested = true;
+        } else {
+            if ((isSomeText || isSomeLores) && isTextBufferDirty(baseAddressText)) {
+                isRenderRequested = true;
+            }
 
-			isRefreshRequested = true;
-		}
+            if (isSomeHires && isHiresBufferDirty(baseAddressHires)) {
+                isRenderRequested = true;
+            }
+        }
+
+        // Draw
+        if (isRenderRequested) {
+            if (isSomeText) {
+                if (isDoubleTextMode) {
+                    renderDoubleText(baseAddressText, isMixedMode);
+                } else {
+                    renderText(baseAddressText, isMixedMode);
+                }
+            }
+
+            if (isSomeHires) {
+                if (isDoubleGraphicsMode) {
+                    renderDoubleHires(baseAddressHires, isMixedMode);
+                } else {
+                    renderHires(baseAddressHires, isMixedMode);
+                }
+            } else if (isSomeLores) {
+                if (isDoubleGraphicsMode) {
+                    renderDoubleLores(baseAddressText, isMixedMode);
+                } else {
+                    renderLores(baseAddressText, isMixedMode);
+                }
+            }
+
+            isRefreshRequested = true;
+        }
 
         if (isRefreshRequested) {
-			isRefreshRequested = false;
-			apple.view.repaint();
-		}
-	}
+            isRefreshRequested = false;
+            apple.view.repaint();
+        }
+    }
 
-	/**
-	 * Set text buffer dirty
-	 */
-	private void setTextBufferDirty(int baseAddress) {
-		// Update dirty
-		int addressStart = baseAddress >> 7;
-		int addressEnd = addressStart + 8;
-		for (int address = addressStart; address < addressEnd; address++) {
-			graphicsDirty[address] = true;
-			apple.graphicsDirty[address] = false;
-		}
-	}
+    /**
+     * Set text buffer dirty
+     */
+    private void setTextBufferDirty(int baseAddress) {
+        // Update dirty
+        int addressStart = baseAddress >> 7;
+        int addressEnd = addressStart + 8;
+        for (int address = addressStart; address < addressEnd; address++) {
+            graphicsDirty[address] = true;
+            apple.graphicsDirty[address] = false;
+        }
+    }
 
-	/**
-	 * Set hires buffer dirty
-	 */
-	private void setHiresBufferDirty(int baseAddress) {
-		// Update dirty
-		int addressStart = baseAddress >> 7;
-		int addressEnd = addressStart + 8;
-		for (int address = addressStart; address < addressEnd; address++) {
-			graphicsDirty[address] = true;
-			apple.graphicsDirty[address + (0x0000 >> 7)] = false;
-			apple.graphicsDirty[address + (0x0400 >> 7)] = false;
-			apple.graphicsDirty[address + (0x0800 >> 7)] = false;
-			apple.graphicsDirty[address + (0x0c00 >> 7)] = false;
-			apple.graphicsDirty[address + (0x1000 >> 7)] = false;
-			apple.graphicsDirty[address + (0x1400 >> 7)] = false;
-			apple.graphicsDirty[address + (0x1800 >> 7)] = false;
-			apple.graphicsDirty[address + (0x1c00 >> 7)] = false;
-		}
-	}
+    /**
+     * Set hires buffer dirty
+     */
+    private void setHiresBufferDirty(int baseAddress) {
+        // Update dirty
+        int addressStart = baseAddress >> 7;
+        int addressEnd = addressStart + 8;
+        for (int address = addressStart; address < addressEnd; address++) {
+            graphicsDirty[address] = true;
+            apple.graphicsDirty[address + (0x0000 >> 7)] = false;
+            apple.graphicsDirty[address + (0x0400 >> 7)] = false;
+            apple.graphicsDirty[address + (0x0800 >> 7)] = false;
+            apple.graphicsDirty[address + (0x0c00 >> 7)] = false;
+            apple.graphicsDirty[address + (0x1000 >> 7)] = false;
+            apple.graphicsDirty[address + (0x1400 >> 7)] = false;
+            apple.graphicsDirty[address + (0x1800 >> 7)] = false;
+            apple.graphicsDirty[address + (0x1c00 >> 7)] = false;
+        }
+    }
 
-	/**
-	 * Is text buffer dirty?
-	 */
-	private boolean isTextBufferDirty(int baseAddress) {
-		boolean isDirty = false;
+    /**
+     * Is text buffer dirty?
+     */
+    private boolean isTextBufferDirty(int baseAddress) {
+        boolean isDirty = false;
 
-		// Update dirty
-		int addressStart = baseAddress >> 7;
-		int addressEnd = addressStart + 8;
-		for (int address = addressStart; address < addressEnd; address++) {
-			graphicsDirty[address] = apple.graphicsDirty[address];
-			apple.graphicsDirty[address] = false;
-			if (graphicsDirty[address]) {
-				isDirty = true;
-			}
-		}
-		
-		return isDirty;
-	}
+        // Update dirty
+        int addressStart = baseAddress >> 7;
+        int addressEnd = addressStart + 8;
+        for (int address = addressStart; address < addressEnd; address++) {
+            graphicsDirty[address] = apple.graphicsDirty[address];
+            apple.graphicsDirty[address] = false;
+            if (graphicsDirty[address]) {
+                isDirty = true;
+            }
+        }
 
-	/**
-	 * Is hires buffer dirty?
-	 */
-	private boolean isHiresBufferDirty(int baseAddress) {
-		boolean isDirty = false;
+        return isDirty;
+    }
 
-		// Update dirty
-		int addressStart = baseAddress >> 7;
-		int addressEnd = addressStart + 8;
-		for (int address = addressStart; address < addressEnd; address++) {
-			graphicsDirty[address] =
-				apple.graphicsDirty[address + (0x0000 >> 7)] || 
-				apple.graphicsDirty[address + (0x0400 >> 7)] ||
-				apple.graphicsDirty[address + (0x0800 >> 7)] || 
-				apple.graphicsDirty[address + (0x0c00 >> 7)] || 
-				apple.graphicsDirty[address + (0x1000 >> 7)] || 
-				apple.graphicsDirty[address + (0x1400 >> 7)] ||
-				apple.graphicsDirty[address + (0x1800 >> 7)] || 
-				apple.graphicsDirty[address + (0x1c00 >> 7)];
-			apple.graphicsDirty[address + (0x0000 >> 7)] = false;
-			apple.graphicsDirty[address + (0x0400 >> 7)] = false;
-			apple.graphicsDirty[address + (0x0800 >> 7)] = false;
-			apple.graphicsDirty[address + (0x0c00 >> 7)] = false;
-			apple.graphicsDirty[address + (0x1000 >> 7)] = false;
-			apple.graphicsDirty[address + (0x1400 >> 7)] = false;
-			apple.graphicsDirty[address + (0x1800 >> 7)] = false;
-			apple.graphicsDirty[address + (0x1c00 >> 7)] = false;
-			if (graphicsDirty[address]) {
-				isDirty = true;
-			}
-		}
-		
-		return isDirty;
-	}
-	
-	/**
-	 * Display precalculation
-	 */
-	private void precalcDisplay() {
-		// Display scaled size
-	    apple.view.setDisplayScaledSizeX((int) (DISPLAY_SIZE_X * displayScale / 2));
-	    apple.view.setDisplayScaledSizeY((int) (DISPLAY_SIZE_Y * displayScale));
+    /**
+     * Is hires buffer dirty?
+     */
+    private boolean isHiresBufferDirty(int baseAddress) {
+        boolean isDirty = false;
 
-		// Prepare display palette
-		setDisplayPalette();
+        // Update dirty
+        int addressStart = baseAddress >> 7;
+        int addressEnd = addressStart + 8;
+        for (int address = addressStart; address < addressEnd; address++) {
+            graphicsDirty[address] =
+                apple.graphicsDirty[address + (0x0000 >> 7)] ||
+                apple.graphicsDirty[address + (0x0400 >> 7)] ||
+                apple.graphicsDirty[address + (0x0800 >> 7)] ||
+                apple.graphicsDirty[address + (0x0c00 >> 7)] ||
+                apple.graphicsDirty[address + (0x1000 >> 7)] ||
+                apple.graphicsDirty[address + (0x1400 >> 7)] ||
+                apple.graphicsDirty[address + (0x1800 >> 7)] ||
+                apple.graphicsDirty[address + (0x1c00 >> 7)];
+            apple.graphicsDirty[address + (0x0000 >> 7)] = false;
+            apple.graphicsDirty[address + (0x0400 >> 7)] = false;
+            apple.graphicsDirty[address + (0x0800 >> 7)] = false;
+            apple.graphicsDirty[address + (0x0c00 >> 7)] = false;
+            apple.graphicsDirty[address + (0x1000 >> 7)] = false;
+            apple.graphicsDirty[address + (0x1400 >> 7)] = false;
+            apple.graphicsDirty[address + (0x1800 >> 7)] = false;
+            apple.graphicsDirty[address + (0x1c00 >> 7)] = false;
+            if (graphicsDirty[address]) {
+                isDirty = true;
+            }
+        }
 
-		// Prepare character set
-		loadCharSet();
+        return isDirty;
+    }
 
-		// Prepare hires graphics
-		precalcHiresLookup();
-	}
+    /**
+     * Display precalculation
+     */
+    private void precalcDisplay() {
+        // Display scaled size
+        apple.view.setDisplayScaledSizeX((int) (DISPLAY_SIZE_X * displayScale / 2));
+        apple.view.setDisplayScaledSizeY((int) (DISPLAY_SIZE_Y * displayScale));
+
+        // Prepare display palette
+        setDisplayPalette();
+
+        // Prepare character set
+        loadCharSet();
+
+        // Prepare hires graphics
+        precalcHiresLookup();
+    }
 
     private static final int CHARSET_SOURCE_CHAR_COUNT = 128;
     private static final int CHARSET_SOURCE_SIZE_X = CHARSET_SOURCE_CHAR_COUNT * CHARSET_CHAR_SIZE_X;
     private static final int CHARSET_SOURCE_SIZE_Y = CHARSET_CHAR_SIZE_Y;
 
     /**
-	 * Precalculate charSet
-	 */
-	private void loadCharSet() {
-		int charSetOffset = 0;
+     * Precalculate charSet
+     */
+    private void loadCharSet() {
+        int charSetOffset = 0;
 
-		// Get RGB image
-		Object resource = apple.view.getCharSet(charSet, CHARSET_SOURCE_SIZE_X, CHARSET_SOURCE_SIZE_Y, CHARSET_SIZE_X);
+        // Get RGB image
+        Object resource = apple.view.getCharSet(charSet, CHARSET_SOURCE_SIZE_X, CHARSET_SOURCE_SIZE_Y, CHARSET_SIZE_X);
 
-		// Duplicate and invert
-		for (int charSetPosY = 0; charSetPosY < CHARSET_SIZE_Y; charSetPosY++) {
-			for (int charSetPosX = 0; charSetPosX < CHARSET_SOURCE_SIZE_X; charSetPosX++) {
-				charSet[charSetOffset + CHARSET_SOURCE_SIZE_X + charSetPosX] = 
-					charSet[charSetOffset + charSetPosX] ^ 0xffffff;
-			}
-			charSetOffset += CHARSET_SIZE_X;
-		}
-		
-		// Colorize
-		for (charSetOffset = 0; charSetOffset < (CHARSET_SIZE_X * CHARSET_SIZE_Y); charSetOffset++) {
-			charSet[charSetOffset] &= (displayPalette[0xf] | 0xff000000);
-		}
+        // Duplicate and invert
+        for (int charSetPosY = 0; charSetPosY < CHARSET_SIZE_Y; charSetPosY++) {
+            for (int charSetPosX = 0; charSetPosX < CHARSET_SOURCE_SIZE_X; charSetPosX++) {
+                charSet[charSetOffset + CHARSET_SOURCE_SIZE_X + charSetPosX] =
+                    charSet[charSetOffset + charSetPosX] ^ 0xffffff;
+            }
+            charSetOffset += CHARSET_SIZE_X;
+        }
+
+        // Colorize
+        for (charSetOffset = 0; charSetOffset < (CHARSET_SIZE_X * CHARSET_SIZE_Y); charSetOffset++) {
+            charSet[charSetOffset] &= (displayPalette[0xf] | 0xff000000);
+        }
 
 //apple.view.debug("here");
-		apple.view.flushCharSet(resource);
-	}
+        apple.view.flushCharSet(resource);
+    }
 
-	/**
-	 * Precalculate char map
-	 */
-	private void precalcCharMaps() {
-		for (int index = 0; index < 3; index++) {
-			for (int character = 0; character < 0x100; character++) {
-				charMaps[index][character] = charMapLookup[index][character >> 5] + (character & 0x1f);
-			}
-		}
-	}
+    /**
+     * Precalculate char map
+     */
+    private void precalcCharMaps() {
+        for (int index = 0; index < 3; index++) {
+            for (int character = 0; character < 0x100; character++) {
+                charMaps[index][character] = charMapLookup[index][character >> 5] + (character & 0x1f);
+            }
+        }
+    }
 
-	/**
-	 * Set char map
-	 */
-	private void setCharMap(int value) {
-		charMap = charMaps[value];
-	}
+    /**
+     * Set char map
+     */
+    private void setCharMap(int value) {
+        charMap = charMaps[value];
+    }
 
-	/**
-	 * Set lores palette
-	 */
-	private void setDisplayPalette() {
-		displayPalette = (colorMode == COLORMODE_COLOR) ? displayPaletteColor : displayPaletteGreen;
-		doubleHiresPalette = (colorMode == COLORMODE_COLOR) ? doubleHiresPaletteColor : displayPaletteGreen;
-	}
+    /**
+     * Set lores palette
+     */
+    private void setDisplayPalette() {
+        displayPalette = (colorMode == COLORMODE_COLOR) ? displayPaletteColor : displayPaletteGreen;
+        doubleHiresPalette = (colorMode == COLORMODE_COLOR) ? doubleHiresPaletteColor : displayPaletteGreen;
+    }
 
-	/**
-	 * Precalculate hires even odd to word
-	 */
-	private void precalcHiresEvenEddToWord() {
-		for (int value = 0; value < 0x200; value++) {
-			hiresEvenOddToWord[value] = 
-				((value & 0x01) << 0) |
-				((value & 0x01) << 1) | 
-				((value & 0x02) << 1) |
-				((value & 0x02) << 2) | 
-				((value & 0x04) << 2) |
-				((value & 0x04) << 3) | 
-				((value & 0x08) << 3) |
-				((value & 0x08) << 4) | 
-				((value & 0x10) << 4) |
-				((value & 0x10) << 5) | 
-				((value & 0x20) << 5) |
-				((value & 0x20) << 6) | 
-				((value & 0x40) << 6) |
-				((value & 0x40) << 7);
+    /**
+     * Precalculate hires even odd to word
+     */
+    private void precalcHiresEvenEddToWord() {
+        for (int value = 0; value < 0x200; value++) {
+            hiresEvenOddToWord[value] =
+                ((value & 0x01) << 0) |
+                ((value & 0x01) << 1) |
+                ((value & 0x02) << 1) |
+                ((value & 0x02) << 2) |
+                ((value & 0x04) << 2) |
+                ((value & 0x04) << 3) |
+                ((value & 0x08) << 3) |
+                ((value & 0x08) << 4) |
+                ((value & 0x10) << 4) |
+                ((value & 0x10) << 5) |
+                ((value & 0x20) << 5) |
+                ((value & 0x20) << 6) |
+                ((value & 0x40) << 6) |
+                ((value & 0x40) << 7);
 
-			if ((value & 0x80) != 0) {
-				hiresEvenOddToWord[value] <<= 1;
-				hiresEvenOddToWord[value] |= ((value & 0x100) >> 8);
-			}
-		}
-	}
+            if ((value & 0x80) != 0) {
+                hiresEvenOddToWord[value] <<= 1;
+                hiresEvenOddToWord[value] |= ((value & 0x100) >> 8);
+            }
+        }
+    }
 
-	/**
-	 * Precalculate hires
-	 */
-	private void precalcHiresLookup() {
-		if (colorMode == COLORMODE_COLOR) {
-			for (int value = 0; value < 0x100; value++) {
-				hiresLookup[value] = hiresLookupColor[((value << 6) & 0xff) | (value >> 2)];
-			}
-		} else {
-			for (int value = 0; value < 0x100; value++) {
-				hiresLookup[value] = 
-					(((value & 0x04) != 0) ? 0x000f : 0) | 
-					(((value & 0x08) != 0) ? 0x00f0 : 0) | 
-					(((value & 0x10) != 0) ? 0x0f00 : 0) | 
-					(((value & 0x20) != 0) ? 0xf000 : 0);
-			}
-		}
-	}
-	
-	/**
-	 * Render text canvas
-	 */
-	private final void renderTextScanLine(int destOffset, int sourceOffset) {
-		displayImageBuffer[destOffset + 0] = displayImageBuffer[destOffset + 1] = charSet[sourceOffset];
-		displayImageBuffer[destOffset + 2] = displayImageBuffer[destOffset + 3] = charSet[sourceOffset + 1];
-		displayImageBuffer[destOffset + 4] = displayImageBuffer[destOffset + 5] = charSet[sourceOffset + 2];
-		displayImageBuffer[destOffset + 6] = displayImageBuffer[destOffset + 7] = charSet[sourceOffset + 3];
-		displayImageBuffer[destOffset + 8] = displayImageBuffer[destOffset + 9] = charSet[sourceOffset + 4];
-		displayImageBuffer[destOffset + 10] = displayImageBuffer[destOffset + 11] = charSet[sourceOffset + 5];
-		displayImageBuffer[destOffset + 12] = displayImageBuffer[destOffset + 13] = charSet[sourceOffset + 6];
-	}
+    /**
+     * Precalculate hires
+     */
+    private void precalcHiresLookup() {
+        if (colorMode == COLORMODE_COLOR) {
+            for (int value = 0; value < 0x100; value++) {
+                hiresLookup[value] = hiresLookupColor[((value << 6) & 0xff) | (value >> 2)];
+            }
+        } else {
+            for (int value = 0; value < 0x100; value++) {
+                hiresLookup[value] =
+                    (((value & 0x04) != 0) ? 0x000f : 0) |
+                    (((value & 0x08) != 0) ? 0x00f0 : 0) |
+                    (((value & 0x10) != 0) ? 0x0f00 : 0) |
+                    (((value & 0x20) != 0) ? 0xf000 : 0);
+            }
+        }
+    }
 
-	private final void renderTextCharacter(int destOffset, int sourceOffset) {
-		renderTextScanLine(destOffset, sourceOffset);
-		destOffset += DISPLAY_SIZE_X; sourceOffset += CHARSET_SIZE_X;
-		renderTextScanLine(destOffset, sourceOffset);
-		destOffset += DISPLAY_SIZE_X; sourceOffset += CHARSET_SIZE_X;
-		renderTextScanLine(destOffset, sourceOffset);
-		destOffset += DISPLAY_SIZE_X; sourceOffset += CHARSET_SIZE_X;
-		renderTextScanLine(destOffset, sourceOffset);
-		destOffset += DISPLAY_SIZE_X; sourceOffset += CHARSET_SIZE_X;
-		renderTextScanLine(destOffset, sourceOffset);
-		destOffset += DISPLAY_SIZE_X; sourceOffset += CHARSET_SIZE_X;
-		renderTextScanLine(destOffset, sourceOffset);
-		destOffset += DISPLAY_SIZE_X; sourceOffset += CHARSET_SIZE_X;
-		renderTextScanLine(destOffset, sourceOffset);
-		destOffset += DISPLAY_SIZE_X; sourceOffset += CHARSET_SIZE_X;
-		renderTextScanLine(destOffset, sourceOffset);
-	}
+    /**
+     * Render text canvas
+     */
+    private final void renderTextScanLine(int destOffset, int sourceOffset) {
+        displayImageBuffer[destOffset + 0] = displayImageBuffer[destOffset + 1] = charSet[sourceOffset];
+        displayImageBuffer[destOffset + 2] = displayImageBuffer[destOffset + 3] = charSet[sourceOffset + 1];
+        displayImageBuffer[destOffset + 4] = displayImageBuffer[destOffset + 5] = charSet[sourceOffset + 2];
+        displayImageBuffer[destOffset + 6] = displayImageBuffer[destOffset + 7] = charSet[sourceOffset + 3];
+        displayImageBuffer[destOffset + 8] = displayImageBuffer[destOffset + 9] = charSet[sourceOffset + 4];
+        displayImageBuffer[destOffset + 10] = displayImageBuffer[destOffset + 11] = charSet[sourceOffset + 5];
+        displayImageBuffer[destOffset + 12] = displayImageBuffer[destOffset + 13] = charSet[sourceOffset + 6];
+    }
 
-	private void renderText(int baseAddress, boolean isMixedMode) {
-		int screenCharY, screenCharYStart = isMixedMode ? 20 : 0;
-		int displayOffset;
-		int address, addressEnd, addressStart;
-		
-		displayOffset = screenCharYStart * DISPLAY_CHAR_SIZE_Y * DISPLAY_SIZE_X;
-		for (screenCharY = screenCharYStart; screenCharY < 24; screenCharY++) {
-			addressStart = baseAddress + textLineAddress[screenCharY];
-			
-			if (graphicsDirty[addressStart >> 7]) {
-				addressEnd = addressStart + 40;
-				
-				for (address = addressStart; address < addressEnd; address++) {
-					renderTextCharacter(displayOffset, charMap[apple.mem[address] & 0xff] << 3);
-					displayOffset += DISPLAY_CHAR_SIZE_X * 2;
-				}
-				displayOffset += (DISPLAY_CHAR_SIZE_Y - 1) * DISPLAY_SIZE_X;
-			} else {
-				displayOffset += DISPLAY_CHAR_SIZE_Y * DISPLAY_SIZE_X;
-			}
-		}
-	}
-	
-	/**
-	 * Render double text canvas
-	 */
-	private final void renderDoubleTextScanLine(int destOffset, int sourceOffset) {
-		displayImageBuffer[destOffset + 0] = charSet[sourceOffset];
-		displayImageBuffer[destOffset + 1] = charSet[sourceOffset + 1];
-		displayImageBuffer[destOffset + 2] = charSet[sourceOffset + 2];
-		displayImageBuffer[destOffset + 3] = charSet[sourceOffset + 3];
-		displayImageBuffer[destOffset + 4] = charSet[sourceOffset + 4];
-		displayImageBuffer[destOffset + 5] = charSet[sourceOffset + 5];
-		displayImageBuffer[destOffset + 6] = charSet[sourceOffset + 6];
-	}
+    private final void renderTextCharacter(int destOffset, int sourceOffset) {
+        renderTextScanLine(destOffset, sourceOffset);
+        destOffset += DISPLAY_SIZE_X; sourceOffset += CHARSET_SIZE_X;
+        renderTextScanLine(destOffset, sourceOffset);
+        destOffset += DISPLAY_SIZE_X; sourceOffset += CHARSET_SIZE_X;
+        renderTextScanLine(destOffset, sourceOffset);
+        destOffset += DISPLAY_SIZE_X; sourceOffset += CHARSET_SIZE_X;
+        renderTextScanLine(destOffset, sourceOffset);
+        destOffset += DISPLAY_SIZE_X; sourceOffset += CHARSET_SIZE_X;
+        renderTextScanLine(destOffset, sourceOffset);
+        destOffset += DISPLAY_SIZE_X; sourceOffset += CHARSET_SIZE_X;
+        renderTextScanLine(destOffset, sourceOffset);
+        destOffset += DISPLAY_SIZE_X; sourceOffset += CHARSET_SIZE_X;
+        renderTextScanLine(destOffset, sourceOffset);
+        destOffset += DISPLAY_SIZE_X; sourceOffset += CHARSET_SIZE_X;
+        renderTextScanLine(destOffset, sourceOffset);
+    }
 
-	private final void renderDoubleTextCharacter(int destOffset, int sourceOffset) {
-		renderDoubleTextScanLine(destOffset, sourceOffset);
-		destOffset += DISPLAY_SIZE_X; sourceOffset += CHARSET_SIZE_X;
-		renderDoubleTextScanLine(destOffset, sourceOffset);
-		destOffset += DISPLAY_SIZE_X; sourceOffset += CHARSET_SIZE_X;
-		renderDoubleTextScanLine(destOffset, sourceOffset);
-		destOffset += DISPLAY_SIZE_X; sourceOffset += CHARSET_SIZE_X;
-		renderDoubleTextScanLine(destOffset, sourceOffset);
-		destOffset += DISPLAY_SIZE_X; sourceOffset += CHARSET_SIZE_X;
-		renderDoubleTextScanLine(destOffset, sourceOffset);
-		destOffset += DISPLAY_SIZE_X; sourceOffset += CHARSET_SIZE_X;
-		renderDoubleTextScanLine(destOffset, sourceOffset);
-		destOffset += DISPLAY_SIZE_X; sourceOffset += CHARSET_SIZE_X;
-		renderDoubleTextScanLine(destOffset, sourceOffset);
-		destOffset += DISPLAY_SIZE_X; sourceOffset += CHARSET_SIZE_X;
-		renderDoubleTextScanLine(destOffset, sourceOffset);
-	}
+    private void renderText(int baseAddress, boolean isMixedMode) {
+        int screenCharY, screenCharYStart = isMixedMode ? 20 : 0;
+        int displayOffset;
+        int address, addressEnd, addressStart;
 
-	private void renderDoubleText(int baseAddress, boolean isMixedMode) {
-		int screenCharY, screenCharYStart = isMixedMode ? 20 : 0;
-		int displayOffset;
-		int address, addressEnd, addressStart;
-		
-		displayOffset = screenCharYStart * DISPLAY_CHAR_SIZE_Y * DISPLAY_SIZE_X;
-		for (screenCharY = screenCharYStart; screenCharY < 24; screenCharY++) {
-			addressStart = baseAddress + textLineAddress[screenCharY];
-			
-			if (graphicsDirty[addressStart >> 7]) {
-				addressEnd = addressStart + 40;
-				
-				for (address = addressStart; address < addressEnd; address++) {
-					renderDoubleTextCharacter(displayOffset, charMap[apple.mem[address + 0x10000] & 0xff] << 3);
-					displayOffset += DISPLAY_CHAR_SIZE_X;
-					renderDoubleTextCharacter(displayOffset, charMap[apple.mem[address + 0x00000] & 0xff] << 3);
-					displayOffset += DISPLAY_CHAR_SIZE_X;
-				}
-				displayOffset += (DISPLAY_CHAR_SIZE_Y - 1) * DISPLAY_SIZE_X;
-			} else {
-				displayOffset += DISPLAY_CHAR_SIZE_Y * DISPLAY_SIZE_X;
-			}
-		}
-	}
-		
-	/**
-	 * Render lores canvas
-	 */
-	private final void renderLoresScanLine(int destOffset, int color) {
-		displayImageBuffer[destOffset + 0] = color;
-		displayImageBuffer[destOffset + 1] = color;
-		displayImageBuffer[destOffset + 2] = color;
-		displayImageBuffer[destOffset + 3] = color;
-		displayImageBuffer[destOffset + 4] = color;
-		displayImageBuffer[destOffset + 5] = color;
-		displayImageBuffer[destOffset + 6] = color;
-	}
+        displayOffset = screenCharYStart * DISPLAY_CHAR_SIZE_Y * DISPLAY_SIZE_X;
+        for (screenCharY = screenCharYStart; screenCharY < 24; screenCharY++) {
+            addressStart = baseAddress + textLineAddress[screenCharY];
 
-	private final void renderLoresBlock(int destOffset, int colorTop, int colorBottom) {
-		renderLoresScanLine(destOffset, colorTop);
-		destOffset += DISPLAY_SIZE_X;
-		renderLoresScanLine(destOffset, colorTop);
-		destOffset += DISPLAY_SIZE_X;
-		renderLoresScanLine(destOffset, colorTop);
-		destOffset += DISPLAY_SIZE_X;
-		renderLoresScanLine(destOffset, colorTop);
-		destOffset += DISPLAY_SIZE_X;
-		renderLoresScanLine(destOffset, colorBottom);
-		destOffset += DISPLAY_SIZE_X;
-		renderLoresScanLine(destOffset, colorBottom);
-		destOffset += DISPLAY_SIZE_X;
-		renderLoresScanLine(destOffset, colorBottom);
-		destOffset += DISPLAY_SIZE_X;
-		renderLoresScanLine(destOffset, colorBottom);
-	}
+            if (graphicsDirty[addressStart >> 7]) {
+                addressEnd = addressStart + 40;
 
-	private void renderLores(int baseAddress, boolean isMixedMode) {
-		int screenCharY, screenCharYEnd = isMixedMode ? 20 : 24;
-		int displayOffset;
-		int address, addressEnd, addressStart;
-		
-		displayOffset = 0;
-		for (screenCharY = 0; screenCharY < screenCharYEnd; screenCharY++) {
-			addressStart = baseAddress + textLineAddress[screenCharY];
-			
-			if (graphicsDirty[addressStart >> 7]) {
-				addressEnd = addressStart + 40;
-				
-				for (address = addressStart; address < addressEnd; address++) {
-					renderLoresBlock(displayOffset, 
-						displayPalette[apple.mem[address] & 0xf], 
-						displayPalette[(apple.mem[address] & 0xf0) >> 4]);
-					displayOffset += DISPLAY_CHAR_SIZE_X;
-					renderLoresBlock(displayOffset, 
-						displayPalette[apple.mem[address] & 0xf], 
-						displayPalette[(apple.mem[address] & 0xf0) >> 4]);
-					displayOffset += DISPLAY_CHAR_SIZE_X;
-				}
-				displayOffset += (DISPLAY_CHAR_SIZE_Y - 1) * DISPLAY_SIZE_X;
-			} else {
-				displayOffset += DISPLAY_CHAR_SIZE_Y * DISPLAY_SIZE_X;
-			}
-		}
-	}
+                for (address = addressStart; address < addressEnd; address++) {
+                    renderTextCharacter(displayOffset, charMap[apple.mem[address] & 0xff] << 3);
+                    displayOffset += DISPLAY_CHAR_SIZE_X * 2;
+                }
+                displayOffset += (DISPLAY_CHAR_SIZE_Y - 1) * DISPLAY_SIZE_X;
+            } else {
+                displayOffset += DISPLAY_CHAR_SIZE_Y * DISPLAY_SIZE_X;
+            }
+        }
+    }
 
-	/**
-	 * Render double lores canvas
-	 */
-	private void renderDoubleLores(int baseAddress, boolean isMixedMode) {
-		int screenCharY, screenCharYEnd = isMixedMode ? 20 : 24;
-		int displayOffset;
-		int address, addressEnd, addressStart;
-		
-		displayOffset = 0;
-		for (screenCharY = 0; screenCharY < screenCharYEnd; screenCharY++) {
-			addressStart = baseAddress + textLineAddress[screenCharY];
-			
-			if (graphicsDirty[addressStart >> 7]) {
-				addressEnd = addressStart + 40;
-				
-				for (address = addressStart; address < addressEnd; address++) {
-					renderLoresBlock(displayOffset, 
-						displayPalette[apple.mem[address + 0x10000] & 0xf], 
-						displayPalette[(apple.mem[address + 0x10000] & 0xf0) >> 4]);
-					displayOffset += DISPLAY_CHAR_SIZE_X;
-					renderLoresBlock(displayOffset, 
-						displayPalette[apple.mem[address] & 0xf], 
-						displayPalette[(apple.mem[address] & 0xf0) >> 4]);
-					displayOffset += DISPLAY_CHAR_SIZE_X;
-				}
-				displayOffset += (DISPLAY_CHAR_SIZE_Y - 1) * DISPLAY_SIZE_X;
-			} else {
-				displayOffset += DISPLAY_CHAR_SIZE_Y * DISPLAY_SIZE_X;
-			}
-		}
-	}
+    /**
+     * Render double text canvas
+     */
+    private final void renderDoubleTextScanLine(int destOffset, int sourceOffset) {
+        displayImageBuffer[destOffset + 0] = charSet[sourceOffset];
+        displayImageBuffer[destOffset + 1] = charSet[sourceOffset + 1];
+        displayImageBuffer[destOffset + 2] = charSet[sourceOffset + 2];
+        displayImageBuffer[destOffset + 3] = charSet[sourceOffset + 3];
+        displayImageBuffer[destOffset + 4] = charSet[sourceOffset + 4];
+        displayImageBuffer[destOffset + 5] = charSet[sourceOffset + 5];
+        displayImageBuffer[destOffset + 6] = charSet[sourceOffset + 6];
+    }
 
-	/**
-	 * Render hires canvas
-	 */
-	private final void renderHiresWord(int destOffset, int hiresNibble) {
-		displayImageBuffer[destOffset + 0] = displayPalette[(hiresNibble >> 0) & 0xf];
-		displayImageBuffer[destOffset + 1] = displayPalette[(hiresNibble >> 4) & 0xf];
-		displayImageBuffer[destOffset + 2] = displayPalette[(hiresNibble >> 8) & 0xf];
-		displayImageBuffer[destOffset + 3] = displayPalette[(hiresNibble >> 12) & 0xf];
-	}
+    private final void renderDoubleTextCharacter(int destOffset, int sourceOffset) {
+        renderDoubleTextScanLine(destOffset, sourceOffset);
+        destOffset += DISPLAY_SIZE_X; sourceOffset += CHARSET_SIZE_X;
+        renderDoubleTextScanLine(destOffset, sourceOffset);
+        destOffset += DISPLAY_SIZE_X; sourceOffset += CHARSET_SIZE_X;
+        renderDoubleTextScanLine(destOffset, sourceOffset);
+        destOffset += DISPLAY_SIZE_X; sourceOffset += CHARSET_SIZE_X;
+        renderDoubleTextScanLine(destOffset, sourceOffset);
+        destOffset += DISPLAY_SIZE_X; sourceOffset += CHARSET_SIZE_X;
+        renderDoubleTextScanLine(destOffset, sourceOffset);
+        destOffset += DISPLAY_SIZE_X; sourceOffset += CHARSET_SIZE_X;
+        renderDoubleTextScanLine(destOffset, sourceOffset);
+        destOffset += DISPLAY_SIZE_X; sourceOffset += CHARSET_SIZE_X;
+        renderDoubleTextScanLine(destOffset, sourceOffset);
+        destOffset += DISPLAY_SIZE_X; sourceOffset += CHARSET_SIZE_X;
+        renderDoubleTextScanLine(destOffset, sourceOffset);
+    }
 
-	private final void renderHiresScanLine(int destOffset, int hiresWord) {
-		renderHiresWord(destOffset + 0, hiresLookup[(hiresWord >> 0) & 0xff]);
-		renderHiresWord(destOffset + 4, hiresLookup[(hiresWord >> 4) & 0xff]);
-		renderHiresWord(destOffset + 8, hiresLookup[(hiresWord >> 8) & 0xff]);
-		renderHiresWord(destOffset + 12, hiresLookup[(hiresWord >> 12) & 0xff]);
-		renderHiresWord(destOffset + 16, hiresLookup[(hiresWord >> 16) & 0xff]);
-		renderHiresWord(destOffset + 20, hiresLookup[(hiresWord >> 20) & 0xff]);
-		renderHiresWord(destOffset + 24, hiresLookup[(hiresWord >> 24) & 0xff]);
-	}
+    private void renderDoubleText(int baseAddress, boolean isMixedMode) {
+        int screenCharY, screenCharYStart = isMixedMode ? 20 : 0;
+        int displayOffset;
+        int address, addressEnd, addressStart;
 
-	private final void renderHiresBlock(int destOffset) {
-		renderHiresScanLine(destOffset, hiresWord[0]); destOffset += DISPLAY_SIZE_X;
-		renderHiresScanLine(destOffset, hiresWord[1]); destOffset += DISPLAY_SIZE_X;
-		renderHiresScanLine(destOffset, hiresWord[2]); destOffset += DISPLAY_SIZE_X;
-		renderHiresScanLine(destOffset, hiresWord[3]); destOffset += DISPLAY_SIZE_X;
-		renderHiresScanLine(destOffset, hiresWord[4]); destOffset += DISPLAY_SIZE_X;
-		renderHiresScanLine(destOffset, hiresWord[5]); destOffset += DISPLAY_SIZE_X;
-		renderHiresScanLine(destOffset, hiresWord[6]); destOffset += DISPLAY_SIZE_X;
-		renderHiresScanLine(destOffset, hiresWord[7]);
-	}
+        displayOffset = screenCharYStart * DISPLAY_CHAR_SIZE_Y * DISPLAY_SIZE_X;
+        for (screenCharY = screenCharYStart; screenCharY < 24; screenCharY++) {
+            addressStart = baseAddress + textLineAddress[screenCharY];
 
-	private final void resetHiresWords() {
-		hiresWord[0] = 0;
-		hiresWord[1] = 0;
-		hiresWord[2] = 0;
-		hiresWord[3] = 0;
-		hiresWord[4] = 0;
-		hiresWord[5] = 0;
-		hiresWord[6] = 0;
-		hiresWord[7] = 0;
-	}
+            if (graphicsDirty[addressStart >> 7]) {
+                addressEnd = addressStart + 40;
 
-	private final void bufferHiresWords() {
-		hiresWord[0] = hiresWordNext[0];
-		hiresWord[1] = hiresWordNext[1];
-		hiresWord[2] = hiresWordNext[2];
-		hiresWord[3] = hiresWordNext[3];
-		hiresWord[4] = hiresWordNext[4];
-		hiresWord[5] = hiresWordNext[5];
-		hiresWord[6] = hiresWordNext[6];
-		hiresWord[7] = hiresWordNext[7];
-	}
+                for (address = addressStart; address < addressEnd; address++) {
+                    renderDoubleTextCharacter(displayOffset, charMap[apple.mem[address + 0x10000] & 0xff] << 3);
+                    displayOffset += DISPLAY_CHAR_SIZE_X;
+                    renderDoubleTextCharacter(displayOffset, charMap[apple.mem[address + 0x00000] & 0xff] << 3);
+                    displayOffset += DISPLAY_CHAR_SIZE_X;
+                }
+                displayOffset += (DISPLAY_CHAR_SIZE_Y - 1) * DISPLAY_SIZE_X;
+            } else {
+                displayOffset += DISPLAY_CHAR_SIZE_Y * DISPLAY_SIZE_X;
+            }
+        }
+    }
 
-	private final void calcNextHiresWord(int hiresWordIndex, int byteEven, int byteOdd) {
-		hiresWordNext[hiresWordIndex] = hiresWord[hiresWordIndex] >> 28;
-		hiresWordNext[hiresWordIndex] |= 
-			hiresEvenOddToWord[(byteEven & 0xff) | ((hiresWordNext[hiresWordIndex] & 0x2) << 7)] << 2;
-		hiresWordNext[hiresWordIndex] |= 
-			hiresEvenOddToWord[(byteOdd & 0xff) | ((hiresWordNext[hiresWordIndex] & 0x8000) >> 7)] << 16;
-		hiresWord[hiresWordIndex] |= (hiresWordNext[hiresWordIndex] << 28);
-	}
+    /**
+     * Render lores canvas
+     */
+    private final void renderLoresScanLine(int destOffset, int color) {
+        displayImageBuffer[destOffset + 0] = color;
+        displayImageBuffer[destOffset + 1] = color;
+        displayImageBuffer[destOffset + 2] = color;
+        displayImageBuffer[destOffset + 3] = color;
+        displayImageBuffer[destOffset + 4] = color;
+        displayImageBuffer[destOffset + 5] = color;
+        displayImageBuffer[destOffset + 6] = color;
+    }
 
-	private final void calcNextHiresWords(int address) {
-		calcNextHiresWord(0, apple.mem[address + 0x00000], apple.mem[address + 0x00001]);
-		calcNextHiresWord(1, apple.mem[address + 0x00400], apple.mem[address + 0x00401]);
-		calcNextHiresWord(2, apple.mem[address + 0x00800], apple.mem[address + 0x00801]);
-		calcNextHiresWord(3, apple.mem[address + 0x00c00], apple.mem[address + 0x00c01]);
-		calcNextHiresWord(4, apple.mem[address + 0x01000], apple.mem[address + 0x01001]);
-		calcNextHiresWord(5, apple.mem[address + 0x01400], apple.mem[address + 0x01401]);
-		calcNextHiresWord(6, apple.mem[address + 0x01800], apple.mem[address + 0x01801]);
-		calcNextHiresWord(7, apple.mem[address + 0x01c00], apple.mem[address + 0x01c01]);
-	}
+    private final void renderLoresBlock(int destOffset, int colorTop, int colorBottom) {
+        renderLoresScanLine(destOffset, colorTop);
+        destOffset += DISPLAY_SIZE_X;
+        renderLoresScanLine(destOffset, colorTop);
+        destOffset += DISPLAY_SIZE_X;
+        renderLoresScanLine(destOffset, colorTop);
+        destOffset += DISPLAY_SIZE_X;
+        renderLoresScanLine(destOffset, colorTop);
+        destOffset += DISPLAY_SIZE_X;
+        renderLoresScanLine(destOffset, colorBottom);
+        destOffset += DISPLAY_SIZE_X;
+        renderLoresScanLine(destOffset, colorBottom);
+        destOffset += DISPLAY_SIZE_X;
+        renderLoresScanLine(destOffset, colorBottom);
+        destOffset += DISPLAY_SIZE_X;
+        renderLoresScanLine(destOffset, colorBottom);
+    }
 
-	private void renderHires(int baseAddress, boolean isMixedMode) {
-		int screenCharY, screenCharYEnd = isMixedMode ? 20 : 24;
-		int displayOffset;
-		int address, addressEnd, addressStart;
-		
-		displayOffset = 0;
-		for (screenCharY = 0; screenCharY < screenCharYEnd; screenCharY++) {
-			addressStart = baseAddress + textLineAddress[screenCharY];
-			
-			if (graphicsDirty[addressStart >> 7]) {
-				addressEnd = addressStart + 40;
+    private void renderLores(int baseAddress, boolean isMixedMode) {
+        int screenCharY, screenCharYEnd = isMixedMode ? 20 : 24;
+        int displayOffset;
+        int address, addressEnd, addressStart;
 
-				resetHiresWords();
-				calcNextHiresWords(addressStart);
-				for (address = (addressStart + 2); address < addressEnd; address += 2) {
-					bufferHiresWords();
-					calcNextHiresWords(address);
-					renderHiresBlock(displayOffset);
-					displayOffset += DISPLAY_CHAR_SIZE_X * 4;
-				}
-				bufferHiresWords();
-				renderHiresBlock(displayOffset);
-				displayOffset += DISPLAY_CHAR_SIZE_X * 4;
-				
-				displayOffset += (DISPLAY_CHAR_SIZE_Y - 1) * DISPLAY_SIZE_X;
-			} else {
-				displayOffset += DISPLAY_CHAR_SIZE_Y * DISPLAY_SIZE_X;
-			}
-		}
-	}
+        displayOffset = 0;
+        for (screenCharY = 0; screenCharY < screenCharYEnd; screenCharY++) {
+            addressStart = baseAddress + textLineAddress[screenCharY];
 
-	/**
-	 * Render double hires canvas
-	 */
-	private final void renderDoubleHiresWord(int destOffset, int hiresNibble) {
-		displayImageBuffer[destOffset + 0] = doubleHiresPalette[(hiresNibble >> 0) & 0xf];
-		displayImageBuffer[destOffset + 1] = doubleHiresPalette[(hiresNibble >> 4) & 0xf];
-		displayImageBuffer[destOffset + 2] = doubleHiresPalette[(hiresNibble >> 8) & 0xf];
-		displayImageBuffer[destOffset + 3] = doubleHiresPalette[(hiresNibble >> 12) & 0xf];
-	}
+            if (graphicsDirty[addressStart >> 7]) {
+                addressEnd = addressStart + 40;
 
-	private final void renderDoubleHiresScanLine(int destOffset, int hiresWord) {
-		renderDoubleHiresWord(destOffset + 0, hiresLookup[(hiresWord >> 0) & 0xff]);
-		renderDoubleHiresWord(destOffset + 4, hiresLookup[(hiresWord >> 4) & 0xff]);
-		renderDoubleHiresWord(destOffset + 8, hiresLookup[(hiresWord >> 8) & 0xff]);
-		renderDoubleHiresWord(destOffset + 12, hiresLookup[(hiresWord >> 12) & 0xff]);
-		renderDoubleHiresWord(destOffset + 16, hiresLookup[(hiresWord >> 16) & 0xff]);
-		renderDoubleHiresWord(destOffset + 20, hiresLookup[(hiresWord >> 20) & 0xff]);
-		renderDoubleHiresWord(destOffset + 24, hiresLookup[(hiresWord >> 24) & 0xff]);
-	}
+                for (address = addressStart; address < addressEnd; address++) {
+                    renderLoresBlock(displayOffset,
+                        displayPalette[apple.mem[address] & 0xf],
+                        displayPalette[(apple.mem[address] & 0xf0) >> 4]);
+                    displayOffset += DISPLAY_CHAR_SIZE_X;
+                    renderLoresBlock(displayOffset,
+                        displayPalette[apple.mem[address] & 0xf],
+                        displayPalette[(apple.mem[address] & 0xf0) >> 4]);
+                    displayOffset += DISPLAY_CHAR_SIZE_X;
+                }
+                displayOffset += (DISPLAY_CHAR_SIZE_Y - 1) * DISPLAY_SIZE_X;
+            } else {
+                displayOffset += DISPLAY_CHAR_SIZE_Y * DISPLAY_SIZE_X;
+            }
+        }
+    }
 
-	private final void renderDoubleHiresBlock(int destOffset) {
-		renderDoubleHiresScanLine(destOffset, hiresWord[0]); destOffset += DISPLAY_SIZE_X;
-		renderDoubleHiresScanLine(destOffset, hiresWord[1]); destOffset += DISPLAY_SIZE_X;
-		renderDoubleHiresScanLine(destOffset, hiresWord[2]); destOffset += DISPLAY_SIZE_X;
-		renderDoubleHiresScanLine(destOffset, hiresWord[3]); destOffset += DISPLAY_SIZE_X;
-		renderDoubleHiresScanLine(destOffset, hiresWord[4]); destOffset += DISPLAY_SIZE_X;
-		renderDoubleHiresScanLine(destOffset, hiresWord[5]); destOffset += DISPLAY_SIZE_X;
-		renderDoubleHiresScanLine(destOffset, hiresWord[6]); destOffset += DISPLAY_SIZE_X;
-		renderDoubleHiresScanLine(destOffset, hiresWord[7]);
-	}
+    /**
+     * Render double lores canvas
+     */
+    private void renderDoubleLores(int baseAddress, boolean isMixedMode) {
+        int screenCharY, screenCharYEnd = isMixedMode ? 20 : 24;
+        int displayOffset;
+        int address, addressEnd, addressStart;
 
-	private final void calcNextDoubleHiresWord(int hiresWordIndex, int byte1, int byte2, int byte3, int byte4) {
-		hiresWordNext[hiresWordIndex] = (
-			((byte1 & 0x7f) << 2) | ((byte2 & 0x7f) << 9) | 
-			((byte3 & 0x7f) << 16) | ((byte4 & 0x7f) << 23) |
-			(hiresWord[hiresWordIndex] >> 28));
-		hiresWord[hiresWordIndex] |= (hiresWordNext[hiresWordIndex] << 28);
-	}
+        displayOffset = 0;
+        for (screenCharY = 0; screenCharY < screenCharYEnd; screenCharY++) {
+            addressStart = baseAddress + textLineAddress[screenCharY];
 
-	private final void calcNextDoubleHiresWords(int address) {
-		calcNextDoubleHiresWord(0, 
-			apple.mem[address + 0x10000], apple.mem[address + 0x00000], 
-			apple.mem[address + 0x10001], apple.mem[address + 0x00001]);
-		calcNextDoubleHiresWord(1,
-			apple.mem[address + 0x10400], apple.mem[address + 0x00400],
-			apple.mem[address + 0x10401], apple.mem[address + 0x00401]);
-		calcNextDoubleHiresWord(2,
-			apple.mem[address + 0x10800], apple.mem[address + 0x00800],
-			apple.mem[address + 0x10801], apple.mem[address + 0x00801]);
-		calcNextDoubleHiresWord(3,
-			apple.mem[address + 0x10c00], apple.mem[address + 0x00c00],
-			apple.mem[address + 0x10c01], apple.mem[address + 0x00c01]);
-		calcNextDoubleHiresWord(4,
-			apple.mem[address + 0x11000], apple.mem[address + 0x01000],
-			apple.mem[address + 0x11001], apple.mem[address + 0x01001]);
-		calcNextDoubleHiresWord(5,
-			apple.mem[address + 0x11400], apple.mem[address + 0x01400],
-			apple.mem[address + 0x11401], apple.mem[address + 0x01401]);
-		calcNextDoubleHiresWord(6,
-			apple.mem[address + 0x11800], apple.mem[address + 0x01800],
-			apple.mem[address + 0x11801], apple.mem[address + 0x01801]);
-		calcNextDoubleHiresWord(7,
-			apple.mem[address + 0x11c00], apple.mem[address + 0x01c00],
-			apple.mem[address + 0x11c01], apple.mem[address + 0x01c01]);
-	}	
+            if (graphicsDirty[addressStart >> 7]) {
+                addressEnd = addressStart + 40;
 
-	private void renderDoubleHires(int baseAddress, boolean isMixedMode) {
-		int screenCharY, screenCharYEnd = isMixedMode ? 20 : 24;
-		int displayOffset;
-		int address, addressEnd, addressStart;
-		
-		displayOffset = 0;
-		for (screenCharY = 0; screenCharY < screenCharYEnd; screenCharY++) {
-			addressStart = baseAddress + textLineAddress[screenCharY];
-			
-			if (graphicsDirty[addressStart >> 7]) {
-				addressEnd = addressStart + 40;
+                for (address = addressStart; address < addressEnd; address++) {
+                    renderLoresBlock(displayOffset,
+                        displayPalette[apple.mem[address + 0x10000] & 0xf],
+                        displayPalette[(apple.mem[address + 0x10000] & 0xf0) >> 4]);
+                    displayOffset += DISPLAY_CHAR_SIZE_X;
+                    renderLoresBlock(displayOffset,
+                        displayPalette[apple.mem[address] & 0xf],
+                        displayPalette[(apple.mem[address] & 0xf0) >> 4]);
+                    displayOffset += DISPLAY_CHAR_SIZE_X;
+                }
+                displayOffset += (DISPLAY_CHAR_SIZE_Y - 1) * DISPLAY_SIZE_X;
+            } else {
+                displayOffset += DISPLAY_CHAR_SIZE_Y * DISPLAY_SIZE_X;
+            }
+        }
+    }
 
-				resetHiresWords();
-				calcNextDoubleHiresWords(addressStart);
-				for (address = (addressStart + 2); address < addressEnd; address += 2) {
-					bufferHiresWords();
-					calcNextDoubleHiresWords(address);
-					renderDoubleHiresBlock(displayOffset);
-					displayOffset += DISPLAY_CHAR_SIZE_X * 4;
-				}
-				bufferHiresWords();
-				renderDoubleHiresBlock(displayOffset);
-				displayOffset += DISPLAY_CHAR_SIZE_X * 4;
-				
-				displayOffset += (DISPLAY_CHAR_SIZE_Y - 1) * DISPLAY_SIZE_X;
-			} else {
-				displayOffset += DISPLAY_CHAR_SIZE_Y * DISPLAY_SIZE_X;
-			}
-		}
-	}
+    /**
+     * Render hires canvas
+     */
+    private final void renderHiresWord(int destOffset, int hiresNibble) {
+        displayImageBuffer[destOffset + 0] = displayPalette[(hiresNibble >> 0) & 0xf];
+        displayImageBuffer[destOffset + 1] = displayPalette[(hiresNibble >> 4) & 0xf];
+        displayImageBuffer[destOffset + 2] = displayPalette[(hiresNibble >> 8) & 0xf];
+        displayImageBuffer[destOffset + 3] = displayPalette[(hiresNibble >> 12) & 0xf];
+    }
+
+    private final void renderHiresScanLine(int destOffset, int hiresWord) {
+        renderHiresWord(destOffset + 0, hiresLookup[(hiresWord >> 0) & 0xff]);
+        renderHiresWord(destOffset + 4, hiresLookup[(hiresWord >> 4) & 0xff]);
+        renderHiresWord(destOffset + 8, hiresLookup[(hiresWord >> 8) & 0xff]);
+        renderHiresWord(destOffset + 12, hiresLookup[(hiresWord >> 12) & 0xff]);
+        renderHiresWord(destOffset + 16, hiresLookup[(hiresWord >> 16) & 0xff]);
+        renderHiresWord(destOffset + 20, hiresLookup[(hiresWord >> 20) & 0xff]);
+        renderHiresWord(destOffset + 24, hiresLookup[(hiresWord >> 24) & 0xff]);
+    }
+
+    private final void renderHiresBlock(int destOffset) {
+        renderHiresScanLine(destOffset, hiresWord[0]); destOffset += DISPLAY_SIZE_X;
+        renderHiresScanLine(destOffset, hiresWord[1]); destOffset += DISPLAY_SIZE_X;
+        renderHiresScanLine(destOffset, hiresWord[2]); destOffset += DISPLAY_SIZE_X;
+        renderHiresScanLine(destOffset, hiresWord[3]); destOffset += DISPLAY_SIZE_X;
+        renderHiresScanLine(destOffset, hiresWord[4]); destOffset += DISPLAY_SIZE_X;
+        renderHiresScanLine(destOffset, hiresWord[5]); destOffset += DISPLAY_SIZE_X;
+        renderHiresScanLine(destOffset, hiresWord[6]); destOffset += DISPLAY_SIZE_X;
+        renderHiresScanLine(destOffset, hiresWord[7]);
+    }
+
+    private final void resetHiresWords() {
+        hiresWord[0] = 0;
+        hiresWord[1] = 0;
+        hiresWord[2] = 0;
+        hiresWord[3] = 0;
+        hiresWord[4] = 0;
+        hiresWord[5] = 0;
+        hiresWord[6] = 0;
+        hiresWord[7] = 0;
+    }
+
+    private final void bufferHiresWords() {
+        hiresWord[0] = hiresWordNext[0];
+        hiresWord[1] = hiresWordNext[1];
+        hiresWord[2] = hiresWordNext[2];
+        hiresWord[3] = hiresWordNext[3];
+        hiresWord[4] = hiresWordNext[4];
+        hiresWord[5] = hiresWordNext[5];
+        hiresWord[6] = hiresWordNext[6];
+        hiresWord[7] = hiresWordNext[7];
+    }
+
+    private final void calcNextHiresWord(int hiresWordIndex, int byteEven, int byteOdd) {
+        hiresWordNext[hiresWordIndex] = hiresWord[hiresWordIndex] >> 28;
+        hiresWordNext[hiresWordIndex] |=
+            hiresEvenOddToWord[(byteEven & 0xff) | ((hiresWordNext[hiresWordIndex] & 0x2) << 7)] << 2;
+        hiresWordNext[hiresWordIndex] |=
+            hiresEvenOddToWord[(byteOdd & 0xff) | ((hiresWordNext[hiresWordIndex] & 0x8000) >> 7)] << 16;
+        hiresWord[hiresWordIndex] |= (hiresWordNext[hiresWordIndex] << 28);
+    }
+
+    private final void calcNextHiresWords(int address) {
+        calcNextHiresWord(0, apple.mem[address + 0x00000], apple.mem[address + 0x00001]);
+        calcNextHiresWord(1, apple.mem[address + 0x00400], apple.mem[address + 0x00401]);
+        calcNextHiresWord(2, apple.mem[address + 0x00800], apple.mem[address + 0x00801]);
+        calcNextHiresWord(3, apple.mem[address + 0x00c00], apple.mem[address + 0x00c01]);
+        calcNextHiresWord(4, apple.mem[address + 0x01000], apple.mem[address + 0x01001]);
+        calcNextHiresWord(5, apple.mem[address + 0x01400], apple.mem[address + 0x01401]);
+        calcNextHiresWord(6, apple.mem[address + 0x01800], apple.mem[address + 0x01801]);
+        calcNextHiresWord(7, apple.mem[address + 0x01c00], apple.mem[address + 0x01c01]);
+    }
+
+    private void renderHires(int baseAddress, boolean isMixedMode) {
+        int screenCharY, screenCharYEnd = isMixedMode ? 20 : 24;
+        int displayOffset;
+        int address, addressEnd, addressStart;
+
+        displayOffset = 0;
+        for (screenCharY = 0; screenCharY < screenCharYEnd; screenCharY++) {
+            addressStart = baseAddress + textLineAddress[screenCharY];
+
+            if (graphicsDirty[addressStart >> 7]) {
+                addressEnd = addressStart + 40;
+
+                resetHiresWords();
+                calcNextHiresWords(addressStart);
+                for (address = (addressStart + 2); address < addressEnd; address += 2) {
+                    bufferHiresWords();
+                    calcNextHiresWords(address);
+                    renderHiresBlock(displayOffset);
+                    displayOffset += DISPLAY_CHAR_SIZE_X * 4;
+                }
+                bufferHiresWords();
+                renderHiresBlock(displayOffset);
+                displayOffset += DISPLAY_CHAR_SIZE_X * 4;
+
+                displayOffset += (DISPLAY_CHAR_SIZE_Y - 1) * DISPLAY_SIZE_X;
+            } else {
+                displayOffset += DISPLAY_CHAR_SIZE_Y * DISPLAY_SIZE_X;
+            }
+        }
+    }
+
+    /**
+     * Render double hires canvas
+     */
+    private final void renderDoubleHiresWord(int destOffset, int hiresNibble) {
+        displayImageBuffer[destOffset + 0] = doubleHiresPalette[(hiresNibble >> 0) & 0xf];
+        displayImageBuffer[destOffset + 1] = doubleHiresPalette[(hiresNibble >> 4) & 0xf];
+        displayImageBuffer[destOffset + 2] = doubleHiresPalette[(hiresNibble >> 8) & 0xf];
+        displayImageBuffer[destOffset + 3] = doubleHiresPalette[(hiresNibble >> 12) & 0xf];
+    }
+
+    private final void renderDoubleHiresScanLine(int destOffset, int hiresWord) {
+        renderDoubleHiresWord(destOffset + 0, hiresLookup[(hiresWord >> 0) & 0xff]);
+        renderDoubleHiresWord(destOffset + 4, hiresLookup[(hiresWord >> 4) & 0xff]);
+        renderDoubleHiresWord(destOffset + 8, hiresLookup[(hiresWord >> 8) & 0xff]);
+        renderDoubleHiresWord(destOffset + 12, hiresLookup[(hiresWord >> 12) & 0xff]);
+        renderDoubleHiresWord(destOffset + 16, hiresLookup[(hiresWord >> 16) & 0xff]);
+        renderDoubleHiresWord(destOffset + 20, hiresLookup[(hiresWord >> 20) & 0xff]);
+        renderDoubleHiresWord(destOffset + 24, hiresLookup[(hiresWord >> 24) & 0xff]);
+    }
+
+    private final void renderDoubleHiresBlock(int destOffset) {
+        renderDoubleHiresScanLine(destOffset, hiresWord[0]); destOffset += DISPLAY_SIZE_X;
+        renderDoubleHiresScanLine(destOffset, hiresWord[1]); destOffset += DISPLAY_SIZE_X;
+        renderDoubleHiresScanLine(destOffset, hiresWord[2]); destOffset += DISPLAY_SIZE_X;
+        renderDoubleHiresScanLine(destOffset, hiresWord[3]); destOffset += DISPLAY_SIZE_X;
+        renderDoubleHiresScanLine(destOffset, hiresWord[4]); destOffset += DISPLAY_SIZE_X;
+        renderDoubleHiresScanLine(destOffset, hiresWord[5]); destOffset += DISPLAY_SIZE_X;
+        renderDoubleHiresScanLine(destOffset, hiresWord[6]); destOffset += DISPLAY_SIZE_X;
+        renderDoubleHiresScanLine(destOffset, hiresWord[7]);
+    }
+
+    private final void calcNextDoubleHiresWord(int hiresWordIndex, int byte1, int byte2, int byte3, int byte4) {
+        hiresWordNext[hiresWordIndex] = (
+            ((byte1 & 0x7f) << 2) | ((byte2 & 0x7f) << 9) |
+            ((byte3 & 0x7f) << 16) | ((byte4 & 0x7f) << 23) |
+            (hiresWord[hiresWordIndex] >> 28));
+        hiresWord[hiresWordIndex] |= (hiresWordNext[hiresWordIndex] << 28);
+    }
+
+    private final void calcNextDoubleHiresWords(int address) {
+        calcNextDoubleHiresWord(0,
+            apple.mem[address + 0x10000], apple.mem[address + 0x00000],
+            apple.mem[address + 0x10001], apple.mem[address + 0x00001]);
+        calcNextDoubleHiresWord(1,
+            apple.mem[address + 0x10400], apple.mem[address + 0x00400],
+            apple.mem[address + 0x10401], apple.mem[address + 0x00401]);
+        calcNextDoubleHiresWord(2,
+            apple.mem[address + 0x10800], apple.mem[address + 0x00800],
+            apple.mem[address + 0x10801], apple.mem[address + 0x00801]);
+        calcNextDoubleHiresWord(3,
+            apple.mem[address + 0x10c00], apple.mem[address + 0x00c00],
+            apple.mem[address + 0x10c01], apple.mem[address + 0x00c01]);
+        calcNextDoubleHiresWord(4,
+            apple.mem[address + 0x11000], apple.mem[address + 0x01000],
+            apple.mem[address + 0x11001], apple.mem[address + 0x01001]);
+        calcNextDoubleHiresWord(5,
+            apple.mem[address + 0x11400], apple.mem[address + 0x01400],
+            apple.mem[address + 0x11401], apple.mem[address + 0x01401]);
+        calcNextDoubleHiresWord(6,
+            apple.mem[address + 0x11800], apple.mem[address + 0x01800],
+            apple.mem[address + 0x11801], apple.mem[address + 0x01801]);
+        calcNextDoubleHiresWord(7,
+            apple.mem[address + 0x11c00], apple.mem[address + 0x01c00],
+            apple.mem[address + 0x11c01], apple.mem[address + 0x01c01]);
+    }
+
+    private void renderDoubleHires(int baseAddress, boolean isMixedMode) {
+        int screenCharY, screenCharYEnd = isMixedMode ? 20 : 24;
+        int displayOffset;
+        int address, addressEnd, addressStart;
+
+        displayOffset = 0;
+        for (screenCharY = 0; screenCharY < screenCharYEnd; screenCharY++) {
+            addressStart = baseAddress + textLineAddress[screenCharY];
+
+            if (graphicsDirty[addressStart >> 7]) {
+                addressEnd = addressStart + 40;
+
+                resetHiresWords();
+                calcNextDoubleHiresWords(addressStart);
+                for (address = (addressStart + 2); address < addressEnd; address += 2) {
+                    bufferHiresWords();
+                    calcNextDoubleHiresWords(address);
+                    renderDoubleHiresBlock(displayOffset);
+                    displayOffset += DISPLAY_CHAR_SIZE_X * 4;
+                }
+                bufferHiresWords();
+                renderDoubleHiresBlock(displayOffset);
+                displayOffset += DISPLAY_CHAR_SIZE_X * 4;
+
+                displayOffset += (DISPLAY_CHAR_SIZE_Y - 1) * DISPLAY_SIZE_X;
+            } else {
+                displayOffset += DISPLAY_CHAR_SIZE_Y * DISPLAY_SIZE_X;
+            }
+        }
+    }
 }

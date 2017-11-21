@@ -21,15 +21,15 @@ http://vavivavi.blogspot.com/
 
 * DONE
 
-	improve pad control
+        improve pad control
         disk selection mode
         virtual keyboard
-	.nib reader
+        .nib reader
 
 * INSTALL
 
-	1. unpack bdjappleii-x.xx.rar
-	
+        1. unpack bdjappleii-x.xx.rar
+        
         2. copy AVCHD directory into
         
             (SD Card) /PRIVATE directory
@@ -38,7 +38,7 @@ http://vavivavi.blogspot.com/
 
         3. copy APPLE2E.ROM into .../AVCHD directory
         
-        4. copy your .dsk image into .../AVCHD directory
+        4. copy your .dsk or .nib image into .../AVCHD directory
 
         5. modify .../AVCHD/appleii.properties
         
@@ -70,7 +70,7 @@ http://vavivavi.blogspot.com/
             BLUE Button         Goto DISK DRIVE 1 MODE
             GREEN Button        Restart
 
-	3. DISK DRIVE 1 MODE
+        3. DISK DRIVE 1 MODE
 
             CIRCLE              Select disk image
             SQUARE              Release disk image
@@ -79,7 +79,7 @@ http://vavivavi.blogspot.com/
             BLUE Button         Goto DISK DRIVE 2 MODE
             GREEN Button        Restart
 
-	4. DISK DRIVE 2 MODE
+        4. DISK DRIVE 2 MODE
 
             CIRCLE              Select disk image
             SQUARE              Release disk image
@@ -91,7 +91,7 @@ http://vavivavi.blogspot.com/
 * ROMz
 
         http://apple2.org.za/gswv/a2zine/System/
-	ftp://ftp.apple.asimov.net/pub/apple_II/
+        ftp://ftp.apple.asimov.net/pub/apple_II/
         
 * GAMEz
 
@@ -101,7 +101,7 @@ http://vavivavi.blogspot.com/
 
 0.12    09-Oct-2008
 
-	improve pad control (i fogot keyReleased() method calling at base ;-P)
+        improve pad control (i forgot keyReleased() method calling at base ;-P)
 
 0.11    28-Sep-2008
 
@@ -110,8 +110,8 @@ http://vavivavi.blogspot.com/
 0.10    26-Sep-2008
 
         virtual keyboard
-	add disk selection mode
-	.nib reader
+        add disk selection mode
+        .nib reader
 
 0.00    15-Sep-2008
 

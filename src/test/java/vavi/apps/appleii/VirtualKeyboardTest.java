@@ -18,7 +18,7 @@ import junit.framework.TestCase;
 
 
 /**
- * VirtualKeyboardTest. 
+ * VirtualKeyboardTest.
  *
  * @author <a href="mailto:vavivavi@yahoo.co.jp">Naohide Sano</a> (nsano)
  * @version 0.00 080924 nsano initial version <br>
@@ -104,7 +104,7 @@ public class VirtualKeyboardTest extends TestCase {
         keys[1][48] = '&';
         keys[1][49] = '*';
         keys[1][50] = '/';
-        
+
         // Roman, upper case
         keys[2] = new char[51]; // numerals
         keys[2][0] = 'Q';

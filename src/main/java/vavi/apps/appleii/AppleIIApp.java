@@ -2,7 +2,7 @@
  * Copyright (c) 2008 by umjammer, All rights reserved.
  *
  * Programmed by umjammer
- * 
+ *
  * Released under the GPL
  */
 
@@ -48,7 +48,7 @@ import org.havi.ui.HSceneFactory;
 
 /**
  * AppleIIApp.
- * 
+ *
  * @author umjammer
  * @version 0.00 080912 umjammer initial version <br>
  */
@@ -120,7 +120,7 @@ e.printStackTrace(System.err);
         private GameVC gameVC;
 
         /**
-         * <pre> 
+         * <pre>
          *  1
          *  2
          *  3
@@ -136,12 +136,12 @@ e.printStackTrace(System.err);
          *  G   restart
          *  Y   reset
          *  O   pad button right
-         *  #   pad button left   
+         *  #   pad button left
          *  U   pad up
          *  L   pad left
          *  R   pad right
          *  D   pad down
-         * </pre> 
+         * </pre>
          */
         class NormalVC {
 
@@ -336,20 +336,20 @@ try {
 } catch (Throwable t) { // for xletview bug
  t.printStackTrace(System.err);
                 files = new File[] {
-                    new File(file, "Lode Runner.dsk"), 
-                    new File(file, "Mystery House.dsk"), 
-                    new File(file, "Tetris II.dsk"), 
-                    new File(file, "tzone1a.nib"), 
-                    new File(file, "tzone1b.nib"), 
-                    new File(file, "tzone2c.nib"), 
-                    new File(file, "tzone2d.nib"), 
-                    new File(file, "tzone3e.nib"), 
-                    new File(file, "tzone3f.nib"), 
-                    new File(file, "tzone4g.nib"), 
-                    new File(file, "tzone4h.nib"), 
-                    new File(file, "tzone5i.nib"), 
-                    new File(file, "tzone5j.nib"), 
-                    new File(file, "tzone6k.nib"), 
+                    new File(file, "Lode Runner.dsk"),
+                    new File(file, "Mystery House.dsk"),
+                    new File(file, "Tetris II.dsk"),
+                    new File(file, "tzone1a.nib"),
+                    new File(file, "tzone1b.nib"),
+                    new File(file, "tzone2c.nib"),
+                    new File(file, "tzone2d.nib"),
+                    new File(file, "tzone3e.nib"),
+                    new File(file, "tzone3f.nib"),
+                    new File(file, "tzone4g.nib"),
+                    new File(file, "tzone4h.nib"),
+                    new File(file, "tzone5i.nib"),
+                    new File(file, "tzone5j.nib"),
+                    new File(file, "tzone6k.nib"),
                     new File(file, "tzone6l.nib"),
                 };
 }
@@ -485,10 +485,10 @@ stat.clear();
                     break;
                 }
             }
-            
+
             void mousePressed(MouseEvent e) {
                 int modifiers = e.getModifiers();
-                
+
                 if ((modifiers & InputEvent.BUTTON3_MASK) != 0) {
                     game.setButton(0, true);
                 }
@@ -499,7 +499,7 @@ stat.clear();
 
             void mouseReleased(MouseEvent e) {
                 int modifiers = e.getModifiers();
-                
+
                 if ((modifiers & InputEvent.BUTTON3_MASK) != 0) {
                     game.setButton(0, false);
                 }
@@ -668,7 +668,7 @@ try {
             this.diskVCs[0] = new DiskVC(0);
             this.diskVCs[1] = new DiskVC(1);
             this.gameVC = new GameVC();
-    
+
             mode = MODE_NORMAL;
 System.err.println("mode: -> MODE_NORMAL");
 
@@ -680,7 +680,7 @@ System.err.println("mode: -> MODE_NORMAL");
         }
 
         /**
-         * <pre> 
+         * <pre>
          *  B   mode change
          *  G   restart
          *  O   key select
@@ -688,12 +688,12 @@ System.err.println("mode: -> MODE_NORMAL");
          *  L   key left
          *  R   key right
          *  D   key down
-         * </pre> 
+         * </pre>
          */
         class KeyBoard {
             Image image;
             int[][] bounds = {
-                { 6, 14, 22, 14 }, 
+                { 6, 14, 22, 14 },
                 { 31, 14, 22, 14 },
                 { 56, 14, 22, 14 },
                 { 82, 14, 22, 14 },
@@ -780,7 +780,7 @@ System.err.println("mode: -> MODE_NORMAL");
             };
             /** l, r, u, d */
             int[][] navigation = {
-                { 13, 1, 67, 14 }, 
+                { 13, 1, 67, 14 },
                 { 0, 2, 68, 15 },
                 { 1, 3, 69, 16 },
                 { 2, 4, 70, 17 },
@@ -886,7 +886,7 @@ System.err.println("mode: -> MODE_NORMAL");
             final int KEY_SHIFT = -2;
             int keyIndex;
             /** normal, shift */
-            int[][] keyDatum = {
+            int[][] keyData = {
                 { 0x1b, 0x1b }, // esc
                 { -1, -1 }, // f1
                 { -1, -1 },
@@ -1007,10 +1007,10 @@ stat.clear();
                 }
             }
             private void keyPressed() {
-                int keyCode = keyDatum[keyIndex][shiftIndex];
+                int keyCode = keyData[keyIndex][shiftIndex];
                 switch (keyCode) {
                 case KEY_SHIFT:
-                    shiftIndex = 1 - shiftIndex; 
+                    shiftIndex = 1 - shiftIndex;
 System.err.println("VK: SHIFT: " + (shiftIndex == 1 ? "ON" : "OFF"));
                     break;
                 default:
@@ -1071,7 +1071,7 @@ if (stat.size() > 0) {
         /** */
         class GameVC {
             int displayScaledSizeX;
-            int displayScaledSizeY; 
+            int displayScaledSizeY;
             MemoryImageSource mis;
             Image displayImage;
             Image displayImagePaused;
@@ -1089,7 +1089,7 @@ if (stat.size() > 0) {
             }
             /** */
             void paint(Graphics g) {
-    
+
                 mis.newPixels();
 
                 g.drawImage(displayImage,
@@ -1099,17 +1099,17 @@ if (stat.size() > 0) {
 
                 if (game.isStatMode()) {
                     g.setColor(Color.black);
-                    g.fillRect(displayScaledSizeX, 0, 512, 600); 
+                    g.fillRect(displayScaledSizeX, 0, 512, 600);
                     drawStatInfo(g);
                 }
-    
+
                 if (game.isPaused()) {
                     g.drawImage(displayImagePaused,
                         0, 0, displayScaledSizeX, displayScaledSizeY,
                         0, 0, AppleDisplay.DISPLAY_SIZE_X, AppleDisplay.DISPLAY_SIZE_Y,
                         MyView.this);
                 }
-    
+
                 if (game.isGlare()) {
                     g.drawImage(displayImageGlare,
                         0, 0, displayScaledSizeX, displayScaledSizeY,

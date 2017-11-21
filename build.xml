@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="Windows-31J"?>
+<?xml version="1.0" encoding="UTf-8"?>
 
 <!-- ////////////////////////////////////////////////////////////////////// -->
 <!-- Copyright (c) 2008 by umjammer, All rights reserved.                   -->
@@ -7,13 +7,14 @@
 <!--                                                                        -->
 <!-- BD-J Apple II                                                          -->
 <!--                                                                        -->
-<!-- @author	umjammer                                                    -->
-<!-- @version	0.00	080912	nsano	initial version                     -->
+<!-- @author umjammer                                                       -->
+<!-- @version 0.00 080912 umjammer initial version                          -->
 <!--                                                                        -->
 <!-- ////////////////////////////////////////////////////////////////////// -->
 
 <project name="bdj Apple II" default="run" basedir=".">
 
+  <property environment="env"/>
   <property file="local.properties" />
 
   <property name="dir.build" value="build"/>
@@ -57,7 +58,7 @@
            destdir="${dir.build}"
            source="1.3"
            target="1.3"
-	   deprecation="true">
+           deprecation="true">
 <!--
       <bootclasspath>
         <pathelement location="${dir.bdj}/lib/basis.jar" />
@@ -123,7 +124,7 @@
         <include name="**/*.properties" />
       </fileset>
     </copy>
-    
+
     <java jar="${dir.bdj}/common/xletview.jar" fork="yes">
 <!--
       <jvmarg value="-Xprof"/>

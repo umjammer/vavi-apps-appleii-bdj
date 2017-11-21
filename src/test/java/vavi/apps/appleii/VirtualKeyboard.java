@@ -1,5 +1,5 @@
 /*
- * $LastChangedDate: 2005-11-21 02:11:20 +0900 (ì›? 21 11 2005) $  
+ * $LastChangedDate: 2005-11-21 02:11:20 +0900 (ì›? 21 11 2005) $
  *
  * Copyright  1990-2006 Sun Microsystems, Inc. All rights reserved.
  * SUN PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
@@ -17,7 +17,7 @@ import java.awt.event.KeyEvent;
 
 /**
  * This is a popup layer that handles a sub-popup within the text tfContext
- * 
+ *
  * @author Amir Uval
  */
 
@@ -72,7 +72,7 @@ class VirtualKeyboard {
 
     /**
      * Virtual Keyboard constructor.
-     * 
+     *
      * @param keys array of available keys for the keyboard
      * @param vkl the virtual keyboard listener
      * @param displayTextArea flag to indicate whether to display the text area
@@ -192,7 +192,7 @@ System.err.println("Please split your keyboard array to multiple arrays.");
 
     /**
      * Checks if the virtual keyboard is enabled.
-     * 
+     *
      * @return <code>true</code> if the virtual keyboard is enabled,
      *         <code>false</code> otherwise.
      */
@@ -202,7 +202,7 @@ System.err.println("Please split your keyboard array to multiple arrays.");
 
     /**
      * Checks if the virtual keyboard is enabled.
-     * 
+     *
      * @return <code>true</code> if the virtual keyboard is enabled,
      *         <code>false</code> otherwise.
      */
@@ -212,7 +212,7 @@ System.err.println("Please split your keyboard array to multiple arrays.");
 
     /**
      * Checks if the virtual keyboard is opened automatically.
-     * 
+     *
      * @return <code>true</code> if the virtual keyboard is opened
      *         automatically, <code>false</code> otherwise.
      */
@@ -222,7 +222,7 @@ System.err.println("Please split your keyboard array to multiple arrays.");
 
     /**
      * traverse the virtual keyboard according to key pressed.
-     * 
+     *
      * @param type type of keypress
      * @param keyCode key code of key pressed
      */
@@ -394,7 +394,7 @@ System.err.println("VirtualK: keyCode=" + keyCode);
 
     /**
      * paint the virtual keyboard on the screen
-     * 
+     *
      * @param g The graphics context to paint to
      */
     protected void paint(Graphics g) {
@@ -426,7 +426,7 @@ System.err.println("VirtualK: keyCode=" + keyCode);
 
     /**
      * Draw the text field of the virtual keyboard.
-     * 
+     *
      * @param g The graphics context to paint to
      */
     void drawTextField(Graphics g) {
@@ -456,7 +456,7 @@ System.err.println("VirtualK: keyCode=" + keyCode);
 
     /**
      * draw keyboard keys
-     * 
+     *
      * @param g The graphics context to paint to
      */
     void drawKeys(Graphics g) {
@@ -491,7 +491,7 @@ System.err.println("VirtualK: keyCode=" + keyCode);
 
     /**
      * draw keyboard meta keys
-     * 
+     *
      * @param g The graphics context to paint to
      */
     void drawMetaKeys(Graphics g) {
@@ -529,7 +529,7 @@ System.err.println("VirtualK: keyCode=" + keyCode);
 
     /**
      * draw a border
-     * 
+     *
      * @param g The graphics context to paint to
      * @param x1 x-coordinate of the button's location
      * @param y1 y-coordinate of the button's location
@@ -549,7 +549,7 @@ System.err.println("VirtualK: keyCode=" + keyCode);
 
     /**
      * draw a sunken border
-     * 
+     *
      * @param g The graphics context to paint to
      * @param x1 x-coordinate of the button's location
      * @param y1 y-coordinate of the button's location
@@ -575,7 +575,7 @@ System.err.println("VirtualK: keyCode=" + keyCode);
 
     /**
      * draw a button
-     * 
+     *
      * @param g The graphics context to paint to
      * @param x x-coordinate of the button's location
      * @param y y-coordinate of the button's location
@@ -599,7 +599,7 @@ System.err.println("VirtualK: keyCode=" + keyCode);
 
     /**
      * draw a beveled button
-     * 
+     *
      * @param g The graphics context to paint to
      * @param x x-coordinate of the button's location
      * @param y y-coordinate of the button's location
@@ -627,12 +627,12 @@ System.err.println("VirtualK: keyCode=" + keyCode);
 
     /**
      * Helper function to determine the itemIndex at the x,y position
-     * 
+     *
      * @param x,y pointer coordinates in menuLayer's space (0,0 means left-top
      *            corner) both value can be negative as menuLayer handles the
      *            pointer event outside its bounds
      * @return menuItem's index since 0, or PRESS_OUT_OF_BOUNDS, PRESS_ON_TITLE
-     * 
+     *
      */
     private boolean isKeyAtPointerPosition(int x, int y) {
         int tmpX, tmpY, tmp;
@@ -696,7 +696,7 @@ System.err.println("VirtualK: keyCode=" + keyCode);
      * and the x,y location in the layer at which the event occurred. Important
      * : the x,y location of the pen tap will already be translated into the
      * coordinate space of the layer.
-     * 
+     *
      * @param type the type of pen event
      * @param x the x coordinate of the event
      * @param y the y coordinate of the event
@@ -774,7 +774,7 @@ class VirtualKeyboardException extends Exception {
      * The error message string <code>s</code> can later be retrieved by the
      * <code>{@link java.lang.Throwable#getMessage}</code> method of class
      * <code>java.lang.Throwable</code>.
-     * 
+     *
      * @param s the detail message.
      */
     public VirtualKeyboardException(String s) {
