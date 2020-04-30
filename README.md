@@ -1,5 +1,9 @@
 # vavi-apps-appleii-bdj
 
-http://www.ps4news.com/forums/playstation-3-psn-news/playstation-3-bd-j-apple-ii-emulator-released-100986.html
+Apple II emulator for BD-J
 
-![image](http://i37.tinypic.com/21k04xs.jpg)
+![image](https://lh3.googleusercontent.com/-WywmgHDOCqNQwQiQE6iuDo3SAXj68SWQewcUstspEKultxMa0VTgSKE6dQvxNTuYiEvBeLHW2zkEUNM-g=w782-h440-rw)
+
+## Published
+
+http://www.ps4news.com/forums/playstation-3-psn-news/playstation-3-bd-j-apple-ii-emulator-released-100986.html
