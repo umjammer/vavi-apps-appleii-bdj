@@ -4,7 +4,7 @@
 
 Apple II emulator for BD-J
 
-![image](https://lh3.googleusercontent.com/-WywmgHDOCqNQwQiQE6iuDo3SAXj68SWQewcUstspEKultxMa0VTgSKE6dQvxNTuYiEvBeLHW2zkEUNM-g=w782-h440-rw)
+![image](https://lh3.googleusercontent.com/tZH1VQzFHGEoj11E7QMQWWpLlW0lJfAmzSDSNf4bQK8O877OnRdVHtQBqFBKjbasbB6d3Wto6Zjr6_2dNg=w782-h440-rw)
 
 ## Published
 
