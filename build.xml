@@ -24,11 +24,7 @@
   <!-- class path definitions -->
   <path id="project.class.path">
     <fileset dir="${dir.bdj}/common">
-      <include name="*.jar" />
-      <include name="jmf/jmf.jar" />
-      <exclude name="javassist.jar" />
-      <exclude name="metouia.jar" />
-      <exclude name="nanoxml-2.2.3.jar" />
+      <exclude name="bdj.jar" />
     </fileset>
   </path>
 
@@ -43,7 +39,6 @@
   <!-- clean -->
   <target name="clean" description="clear build enviroment">
     <delete file="${jar.name}" failonerror="false" />
-    <delete dir="META-INF" failonerror="false" />
     <delete dir="${dir.build}" failonerror="false" />
   </target>
 
@@ -64,7 +59,10 @@
         <pathelement location="${dir.bdj}/lib/basis.jar" />
       </bootclasspath>
 -->
-      <classpath refid="project.class.path" />
+      <classpath>
+        <path refid="project.class.path" />
+        <pathelement location="${dir.bdj}/common/bdj.jar" />
+      </classpath>
       <src path="src/main/java" />
     </javac>
   </target>
@@ -72,23 +70,14 @@
   <!-- jar -->
   <target name="packaging" depends="compile" description="packaging">
 
-    <copy file="etc/bluray.MyXlet.perm" toFile="${dir.build}/${paem.file}" /> 
-
-    <copy toDir="${dir.build}">
-      <fileset dir="src/main/java">
-        <include name="**/*.properties" />
-      </fileset>
-    </copy>
+    <copy file="etc/bluray.MyXlet.perm" toFile="${dir.build}/vavi/apps/appleii/bluray.MyXlet.perm" /> 
 
     <copy toDir="${dir.build}">
       <fileset dir="src/main/resources" />
     </copy>
 
     <jar jarfile="${jar.name}">
-      <fileset dir="${dir.build}">
-        <exclude name="config" />
-        <exclude name="config/**/*" />
-      </fileset>
+      <fileset dir="${dir.build}" />
     </jar>
 
   </target>
@@ -100,11 +89,12 @@
       <arg line="-keystore ${dir.sign}/sig.ks" />
       <arg value="${jar.name}" />
     </java>
+    <delete dir="META-INF" failonerror="false" />
   </target>
 
   <!-- dist -->
   <target name="dist" depends="sign" description="distribution">
-    <java jar="${dir.bdj}/common/hdcookbook/bdjo.jar" fork="yes">
+    <java jar="${dir.bdj}/hdcookbook/bdjo.jar" fork="yes">
       <arg value="etc/bdjo.xml" />
       <arg value="00000.bdjo" />
     </java>
@@ -112,30 +102,16 @@
 
   <!-- run -->
   <target name="run" depends="" description="test">
-    <copy todir="${dir.build}">
-      <fileset dir="etc" >
-        <include name="config/**/*" />
-      </fileset>
-    </copy>
-
-    <copy toDir="${dir.bdj}/common">
-      <fileset dir="src/main/resources" />
-      <fileset dir="${dir.build}">
-        <include name="**/*.properties" />
-      </fileset>
-    </copy>
-
-    <java jar="${dir.bdj}/common/xletview.jar" fork="yes">
-<!--
-      <jvmarg value="-Xprof"/>
--->
-      <jvmarg value="-Djava.ext.dirs=${dir.bdj}/common"/>
+    <java classname="net.beiker.xletview.Main" fork="yes">
       <classpath>
-        <pathelement location="${dir.build}" />
-        <path refid="project.class.path" />
+        <pathelement location="${dir.runtime}" />
+        <pathelement location="${dir.xletview}/target/xletvew-0.3.6v-SNAPSHOT-jar-with-dependencies.jar" />
+        <pathelement location="/Users/nsano/src/vavi/vavi-commons/target/vavi-commons-1.1.6-SNAPSHOT.jar" />
       </classpath>
+      <jvmarg value="-Djava.util.logging.config.file=${dir.xletview}/src/test/resources/logging.properties"/>
       <arg line="-xletPath ${dir.build}" />
       <arg line="-xletClass vavi.apps.appleii.AppleIIApp" />
+      <arg line="-xletExtraPath ${dir.xletview}/target/xletvew-0.3.6v-SNAPSHOT-jar-only-dvd.jar" />
     </java>
   </target>
 

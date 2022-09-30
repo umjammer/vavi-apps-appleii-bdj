@@ -335,6 +335,7 @@ try {
                 });
 } catch (Throwable t) { // for xletview bug
  t.printStackTrace(System.err);
+ System.err.println("this is running on xletview!");
                 files = new File[] {
                     new File(file, "Lode Runner.dsk"),
                     new File(file, "Mystery House.dsk"),
@@ -1192,8 +1193,8 @@ try {
         private Properties props = new Properties();
 
         MyDao() throws IOException {
-            root = System.getProperty("bluray.vfs.root", "../tmp");
-//System.err.println("root: " + root);
+            root = System.getProperty("bluray.vfs.root", "");
+System.err.println("root: " + root);
             props.load(new FileInputStream(new File(root, "appleii.properties")));
         }
 
@@ -1236,6 +1237,7 @@ System.err.println("Illegal EOF: " + l + "/" + length);
                 }
             } catch (IOException e) {
 //e.printStackTrace(System.err);
+System.err.println("resource: " + resource);
               throw new IllegalStateException(e);
             }
         }

@@ -1,0 +1,4 @@
+dir.bdj=yourdir/bdj-toolchain
+dir.sign=${dir.bdj}/common/sig
+dir.xletview=yourdir/xletview
+dir.runtime=${dir.xletview}/src/main/runtime
