@@ -2,3 +2,7 @@ dir.bdj=yourdir/bdj-toolchain
 dir.sign=${dir.bdj}/common/sig
 dir.xletview=yourdir/xletview
 dir.runtime=${dir.xletview}/src/main/runtime
+vavi-commons.jar=${user.home}/.m2/repository/com/github/umjammer/vavi-commons/1.1.16/vavi-commons-1.1.16.jar
+xletview-with-deps.jar=${dir.xletview}/target/xletvew-0.3.6v-SNAPSHOT-jar-with-dependencies.jar
+xletview-only-dvd.jar=${dir.xletview}/target/xletvew-0.3.6v-SNAPSHOT-jar-only-dvd.jar
+runtime.jdk.home=/Library/Java/JavaVirtualMachines/openjdk.jdk/Contents/Home

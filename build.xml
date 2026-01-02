@@ -102,19 +102,18 @@
 
   <!-- run -->
   <target name="run" depends="" description="test">
-    <java classname="net.beiker.xletview.Main" fork="yes">
+    <java classname="net.beiker.xletview.Main" fork="yes"
+          jvm="${runtime.jdk.home}/bin/java" >
       <classpath>
         <pathelement location="${dir.runtime}" />
-        <pathelement location="${dir.xletview}/target/xletvew-0.3.6v-SNAPSHOT-jar-with-dependencies.jar" />
-        <pathelement location="/Users/nsano/src/vavi/vavi-commons/target/vavi-commons-1.1.6-SNAPSHOT.jar" />
+        <pathelement location="${xletview-with-deps.jar}" />
+        <pathelement location="${vavi-commons.jar}" />
       </classpath>
       <jvmarg value="-Djava.util.logging.config.file=${dir.xletview}/src/test/resources/logging.properties"/>
       <arg line="-xletPath ${dir.build}" />
       <arg line="-xletClass vavi.apps.appleii.AppleIIApp" />
-      <arg line="-xletExtraPath ${dir.xletview}/target/xletvew-0.3.6v-SNAPSHOT-jar-only-dvd.jar" />
+      <arg line="-xletExtraPath ${xletview-only-dvd.jar}" />
     </java>
   </target>
 
 </project>
-
-<!-- -->
