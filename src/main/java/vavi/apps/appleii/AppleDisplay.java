@@ -98,11 +98,11 @@ public class AppleDisplay implements Runnable {
     };
 
     // Hires stuff
-    private int hiresEvenOddToWord[] = new int[0x200];
-    private int hiresWord[] = new int[8];
-    private int hiresWordNext[] = new int[8];
-    private int hiresLookup[] = new int[0x100];    // Bits: [NNccccPP] - Next, current, Previous bits
-    private static final int hiresLookupColor[] = {
+    private final int[] hiresEvenOddToWord = new int[0x200];
+    private int[] hiresWord = new int[8];
+    private int[] hiresWordNext = new int[8];
+    private int[] hiresLookup = new int[0x100];    // Bits: [NNccccPP] - Next, current, Previous bits
+    private static final int[] hiresLookupColor = {
         // Bits: [PPNNcccc] - Previous, Next, current bits => 4 pixel @ 4 bit color output
         // Color-bleeding algorithm
         0x0000, 0x0111, 0x2222, 0x2333, 0x4440, 0x4551, 0x6662, 0x6773, 0x8800, 0x8911, 0xaa22, 0xab33, 0xcc40, 0xcd51, 0xee62, 0xef73, // 00cccc00

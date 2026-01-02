@@ -1,5 +1,7 @@
-bin/
-00000.*
-META-INF/
-etc/config/
 tmp/
+build/
+local.properties
+src/main/resources/APPLE2E.ROM
+src/main/resources/*.dsk
+00000.bdjo
+00000.jar
